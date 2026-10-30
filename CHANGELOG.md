@@ -30,6 +30,8 @@ Versioning once a release exists.
   permissions, and cancels superseded runs.
 - The Tauri global API is disabled (`withGlobalTauri: false`); the frontend
   calls `__TAURI_INTERNALS__` directly.
+- Rewrote the README in the er-refill documentation style and updated the MIT
+  copyright holder.
 
 ### Fixed
 

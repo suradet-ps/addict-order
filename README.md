@@ -1,220 +1,212 @@
 # Addict Order
 
-**A controlled-document desktop app for Thai Category 2 narcotic and Category 2 psychotropic prescriptions.**
+[![CI](https://github.com/suradet-ps/addict-order/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/suradet-ps/addict-order/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Rust: stable](https://img.shields.io/badge/rust-stable-orange.svg?logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app/)
+[![Leptos 0.8](https://img.shields.io/badge/Leptos-0.8-blue.svg)](https://leptos.dev)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/suradet-ps/addict-order/issues)
 
-> The target document is the official **Y.S. 2 / W.C. 2 prescription form**
-> (ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒) issued by the Thai Narcotics Control Division.
-> It is a prescription, not a ward drug requisition. The app uses the official
-> Thai term "ใบสั่งจ่าย" in the UI and on paper.
+---
 
-Status: **M0 to M4 scaffold implemented; schema blockers still open**. The
-first verification pass against `hos`, โรงพยาบาลสระโบสถ์, MariaDB 10.5.29
-corrected the SQL and schema assumptions. The working desktop app now has the
-login gate, patient search, visit selection, pharmacist catalog, order pull,
-official A4 form preview, confirmation gate, and print. The remaining blockers
-are B1, B4, B5 to B11, and B12 to B14. See
-[`docs/verify-schema.md`](docs/verify-schema.md) and
-[`docs/verify-queries.sql`](docs/verify-queries.sql).
+## ◆ PULSE
 
-## Overview
+A controlled prescription is already a legal document. The pharmacist should
+not be re-typing the same patient identity, address, prescriber licence, and
+drug details into it. Addict Order removes the transcription without removing
+the pharmacist from the loop.
 
-Addict Order is a Tauri 2 desktop application for hospital pharmacy staff. It
-reads a HOSxP MySQL/MariaDB database in strict read-only mode, finds a patient
-by HN, CID, or name, loads a selected visit, pulls the configured narcotic
-icodes from that visit, and assembles the official Thai prescription form for
-the prescriber to sign.
+Operators sign in with their HOSxP **`officer`** account after the database
+connection is verified. Addict Order then reads the hospital's
+[HOSxP](https://hosxp.org/) record, strictly read-only, finds a patient by HN,
+CID, or name, loads the selected OPD visit, and pulls only the configured
+narcotic icodes from that visit. It assembles the official **Y.S. 2 / W.C. 2
+prescription form** (ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒) for the prescriber to sign.
+HOSxP is never written to, no patient data is cached, and the printed paper is
+the legal record.
 
-The app is a document builder, not a prescribing system. It never writes to
-HOSxP, never prints a signature, and never invents clinical or legal data.
+It is a prescription, not a ward requisition. The app uses the official Thai
+term "ใบสั่งจ่าย" in the UI and on paper. It is a document builder, not a
+prescribing system: no dose calculation, no drug interaction checks, no stock
+control, and no HOSxP write. OPD first; IPD admissions are out of scope for v1.
 
-## Why this exists
+| D0 design ▣ | D1 spec ▣ | D2 schema ◐ | M0-M4 app ▣ | M5 pilot ☐ |
+|---|---|---|---|---|
 
-The official form requires patient identity, address, prescriber identity,
-professional licence number, hospital details, drug generic name, trade name,
-strength, directions for use, quantity, and unit. Much of that data already
-exists in HOSxP, but it is spread across several tables and varies between
-HOSxP installations. Re-typing it creates transcription errors on a controlled
-document.
+*The document pipeline - login, patient, visit, catalog, order pull, form,
+confirmation, print - is implemented. The schema and legal blockers (B1,
+B4-B11, B12-B14) and the pharmacy pilot wait ahead.*
 
-Addict Order reduces transcription while keeping the pharmacist and prescriber
-in control:
+> Built with Tauri 2 + Leptos 0.8, decided by `addict-order-core`, read from
+> HOSxP by `addict-order-hosxp-connector` - never a write, never a guessed
+> legal category.
+>
+> **suradet-ps**, artifact keeper
 
-1. Sign in with the HOSxP `officer` account.
-2. Search for the patient by HN, CID, or name.
-3. Select the visit that the prescription belongs to.
-4. The app reads only the configured narcotic icodes for that visit.
-5. The pharmacist reviews the official form preview.
-6. The form is confirmed and printed. The prescriber signs it by hand.
+---
 
-## Scope
+## ◆ IGNITION
 
-### In scope for v1
+One target, two installs, one test, one launch.
 
-- HOSxP `officer` login with an in-memory session.
-- Patient search by HN, CID, or Thai name.
-- OPD visit selection for the prescription date.
-- A pharmacist-managed catalog of narcotic icodes with print metadata.
-- Pulling configured narcotic order lines from the selected visit.
-- Official A4 form preview and print, five drug rows per form.
-- A confirmation gate that freezes the printed snapshot.
-- Local settings for hospital header, catalog, and print options.
-
-### Out of scope for v1
-
-- Writing, updating, or deleting anything in HOSxP.
-- Prescribing, dose calculation, drug interaction checks, or clinical decisions.
-- Printing a signature or a signature image.
-- Stock control, ward requisitions, or inventory.
-- IPD admissions. OPD visits first, pending pharmacist confirmation.
-- Persistent patient history or a local prescription archive.
-- Automatic inference of the legal drug category.
-- A second print layout. The screen preview is the print output.
-
-## Implemented in the current scaffold
-
-- Tauri 2 + Leptos 0.8 workspace with four Rust crates.
-- HOSxP `officer` login with encrypted connection settings and a memory-only session.
-- Patient search by HN, CID, or name, with CID masking.
-- Visit selection for the last 30 days.
-- Pharmacist-managed narcotic catalog with icode search, legal category, print unit, default sig, and active flag.
-- Order pull from the selected visit using the configured icodes.
-- Official A4 form preview with five rows, category checkboxes, patient and prescriber blocks, notes, and the legal box.
-- Patient edit and prescriber selection dialogs.
-- Confirmation snapshot gate and `window.print()`.
-- Read-only guard, parameterized SQL, and encrypted connection config.
-- Unit tests for models, core, connector, and Tauri settings.
-
-The remaining work is closing the schema and legal blockers before the pilot.
-
-## Architecture
-
-The workspace follows the proven er-refill structure:
-
-```text
-addict-order/
-├── src-tauri/              # Tauri 2 shell: thin command adapters only
-├── crates/
-│   ├── models/             # Domain types and Thai/Buddhist-era formatting
-│   ├── core/               # Validation, form builder, snapshot, repository trait
-│   └── hosxp-connector/    # The only crate allowed to talk to MySQL
-├── app/                    # Leptos 0.8 CSR/WASM frontend
-│   ├── src/
-│   └── style/
-├── docs/
-└── icon-master.svg
+```
+⟫ rustup target add wasm32-unknown-unknown
+⟫ cargo install trunk --locked
+⟫ cargo install tauri-cli --locked
+⟫ cargo test            # DB-free: core runs against a mock repository
+⟫ cargo tauri dev       # desktop app; trunk serves itself
 ```
 
-Dependency direction:
+The release artifact: `⟫ cargo tauri build` - output lands in
+`target/release/bundle`.
 
-```text
-app -> addict-order-core -> addict-order-models
-hosxp-connector implements a repository trait defined in addict-order-core
+<details>
+<summary>Notes for clinic PCs</summary>
+
+- Windows needs the WebView2 Runtime - preinstalled on updated Windows 10/11;
+  offline machines should take Microsoft's Evergreen offline installer first.
+- Installers are **unsigned for v0.x**: expect the SmartScreen prompt
+  (*More info -> Run anyway*) and coordinate AV whitelisting with hospital IT.
+- The HOSxP connection is configured once per machine in the settings dialog;
+  every field is encrypted with `encryptman` and the master key rests in the OS
+  keychain. Each PC enters its own connection; credentials never travel.
+- The catalog is configured once by the pharmacist: icode search, generic and
+  trade name, strength, print unit, default sig, and the legal category
+  (`NARCOTIC_2` or `PSYCHOTROPIC_2`). The category is never inferred from the
+  drug name.
+- The official form has **five drug rows**. A prescription with more than five
+  lines is blocked and must be split into separate forms.
+
+</details>
+
+---
+
+## ◆ ANATOMY
+
+Four crates, one hard law: HOSxP is read-only, without exceptions.
+
+- **Decides** - `addict-order-core` is pure Rust: validation, the form builder,
+  the confirmation snapshot, and the repository trait. It decides whether a
+  draft may be confirmed: patient name, CID, prescriber and licence, hospital
+  name, prescription date, at least one line, at most five lines, and a complete
+  drug line (generic name, strength, sig, quantity greater than zero, print
+  unit, legal category). Tested against a mock repository - no live database in
+  the default suite, ever.
+- **Reads** - `addict-order-hosxp-connector` is the only crate allowed to talk
+  to MySQL/MariaDB. It signs in against `officer` (MD5 password, never the
+  plaintext column), searches `patient` by HN, CID, or name, lists `ovst`
+  visits, and reads `opitemrece` lines for the selected `vn` filtered to the
+  configured icodes, `qty > 0`, `sub_type = '1'`, `item_type <> 'A'`, and OPD
+  lines only, joined to `drugitems`. Line identity is `hos_guid`. Every SQL
+  constant carries a guard test asserting it is a single read statement - no
+  writes of any kind.
+- **Prints** - `app` is the Leptos frontend, document-first: the command bar
+  holds the search and pull controls, and the stage shows the official A4 sheet
+  itself - the same DOM and stylesheet that print. The sheet has five drug
+  rows, patient and prescriber blocks, category checkboxes, notes, and the
+  legal box. Editing the patient, prescriber, or any line invalidates the
+  confirmation. Printing is gated: the operator confirms a snapshot of the
+  patient, visit, prescriber, licence, hospital, date, lines, and category
+  flags; only then does **พิมพ์ใบสั่งจ่าย** call `window.print()` on exactly
+  that snapshot.
+- **Seals** - read-only is enforced in layers: a dedicated user with
+  `GRANT SELECT` only, `SET SESSION TRANSACTION READ ONLY` on every pooled
+  connection, an application-level guard rejecting anything but a single read
+  statement, parameterized queries everywhere. Credentials rest encrypted with
+  `encryptman`; the key lives in the OS keychain through
+  `encryptman-keyring`; the password is a `secrecy::SecretString` end to end,
+  zeroized on drop, `Debug`-redacted. The plain settings file holds only the
+  hospital profile, catalog, and print preferences - never credentials or
+  patient data.
+- **Signs in** - the login gate verifies the encrypted HOSxP connection, reads
+  one `officer` row, checks active/auth type, and compares `MD5(password)` with
+  `officer_login_password_md5`. The plaintext column is never selected;
+  `opduser` is never queried; the session is memory-only and cleared on logout,
+  restart, or connection change (see `docs/auth.md`).
+- **Labels** - Thai/Buddhist-era formatting lives in `addict-order-models`,
+  one implementation shared by the screen and the paper. CID is masked in
+  search results and shown in full only on the selected patient card and the
+  form preview.
+
+---
+
+## ◆ RITUALS
+
+**The core ceremony** - one controlled prescription:
+
+1. Open the app: verify the HOSxP connection, sign in with the `officer`
+   account. The session is memory-only.
+2. Search for the patient by HN, CID, or Thai name. The result list masks the
+   CID; the selected patient card and the form preview show it in full.
+3. Select the OPD visit that the prescription belongs to. The prescription
+   date is the selected visit date; free backdating is not allowed.
+4. The backend reads only the configured narcotic icodes for that visit. A
+   drug that is not in the pharmacist-managed catalog is never printed.
+5. Review the official form: patient identity and address, prescriber and
+   licence, hospital header, prescription date, legal category checkboxes, and
+   up to five drug rows. Any edit after confirmation clears the snapshot.
+6. Confirm the snapshot, then print. The app never prints a signature; the
+   prescriber signs the paper by hand.
+
+**The ceremony of the legal category** - the pharmacist sets `NARCOTIC_2` or
+`PSYCHOTROPIC_2` on every catalog item. The app never guesses the category from
+a drug name, a therapeutic group, or an unverified HOSxP column.
+
+**The ceremony of restraint** - the app reads a record and prints a paper. It
+stores no patient data and keeps no local prescription history. The signed
+paper is the record of the visit.
+
+---
+
+## ◆ ECHOES
+
+**Where this artifact is heading**
+
+```
+design  ▸ official form, schema verification package ─────────── ▸ sealed
+login   ▸ officer auth, encrypted connection, memory session ─── ▸ sealed
+search  ▸ HN / CID / name, CID masking, visit selection ──────── ▸ sealed
+catalog ▸ pharmacist-managed icodes + legal category ─────────── ▸ sealed
+pull    ▸ configured icodes from one visit, read-only ────────── ▸ sealed
+form    ▸ A4 Y.S. 2 / W.C. 2, five rows, confirmation gate ───── ▸ sealed
+print   ▸ window.print() on the confirmed snapshot ───────────── ▸ sealed
+schema  ▸ B1, B4-B11, B12-B14 sign-off ──────────────────────── ▸ ahead
+pilot   ▸ pharmacy review, real prescriptions, feedback ──────── ▸ ahead
 ```
 
-`addict-order-core` is testable with a mock repository. The default test suite
-must never require a live database.
+**The schema gate** - the first verification pass on 2026-10-29 against `hos`,
+โรงพยาบาลสระโบสถ์, MariaDB 10.5.29 corrected the SQL and schema assumptions:
+`tis620` charset, `opitemrece.hos_guid` as the primary key,
+`doctor.licenseno` as the licence column, and the missing legal-category data
+in `drugitems`. The remaining blockers are tracked in
+`docs/verify-schema.md`; no column is guessed.
 
-### Stack
+**Raising the artifact** - read `AGENTS.md` first, especially the hard rules:
+HOSxP read-only without exceptions, no PHI or secrets in logs, parameterized
+queries only, `SCHEMA-UNVERIFIED` markers until the DBA confirms, and the
+pharmacist-verified legal category. `CONTRIBUTING.md` holds the contribution
+checklist. The form transcription is `docs/form-spec.md`; the schema checklist
+is `docs/verify-schema.md`; the login design is `docs/auth.md`; the visual
+system is `docs/DESIGN.md`. `SECURITY.md` holds the vulnerability and PHI
+policy; `docs/security-scanning.md` covers GitHub, GitGuardian, and local
+secret scanning.
 
-- Tauri 2 desktop shell.
-- Leptos 0.8 client-side rendering compiled to WASM with Trunk.
-- Rust 2024 edition.
-- sqlx with MySQL/MariaDB, SELECT-only.
-- encryptman plus encryptman-keyring for connection credentials.
-- Plain CSS, no UI framework.
-- HTML/CSS A4 print plus `window.print()`, no PDF library.
+**Status** - every change runs fmt, `clippy -D warnings`, the DB-free test
+suite, `cargo doc`, and a `trunk build` of the wasm frontend. CI also compiles
+and tests the Tauri shell on Linux.
 
-## Documentation
+> Addict Order prints what HOSxP recorded. The pharmacist verifies, the
+> prescriber signs, and the paper is the contract.
 
-| Document | Purpose |
-|---|---|
-| [`docs/form-spec.md`](docs/form-spec.md) | Full transcription of the official form, measurements, field mapping, print rules, and legal questions |
-| [`docs/verify-schema.md`](docs/verify-schema.md) | Every HOSxP table and column to verify, with SQL and pass criteria |
-| [`docs/verify-queries.sql`](docs/verify-queries.sql) | Runnable read-only verification queries |
-| [`docs/architecture.md`](docs/architecture.md) | System design, domain model, data flow, security, and milestones |
-| [`docs/auth.md`](docs/auth.md) | HOSxP `officer` login, session, MD5 caveat, and prescriber identity |
-| [`docs/DESIGN.md`](docs/DESIGN.md) | Visual system derived from `icon-master.svg` |
-| [`docs/print-template.html`](docs/print-template.html) | Static A4 print reference for layout review |
-| [`AGENTS.md`](AGENTS.md) | Rules for coding agents and future contributors |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution workflow and review checklist |
-| [`SECURITY.md`](SECURITY.md) | Security policy and PHI handling |
-| [`docs/security-scanning.md`](docs/security-scanning.md) | GitHub, GitGuardian, and local secret-scanning setup |
-| [`CHANGELOG.md`](CHANGELOG.md) | Release history |
+---
 
-## Schema verification first
-
-The app will not guess HOSxP column names. The following areas must be verified
-against the hospital instance before connector code is written:
-
-- `officer` login columns and the MD5 assumption.
-- `patient` identity, CID, name, address parts, and phone columns.
-- Address lookup tables and the correct join for subdistrict, district,
-  province, and postal code.
-- `ovst` visit columns and the visit date source.
-- `opitemrece` order columns, filters, and line identity.
-- `drugitems` generic name, trade name, strength, units, and any legal category
-  source.
-- `drugusage` and `sp_use` text columns.
-- `doctor` name and professional licence number.
-- Hospital profile source or a settings-only fallback.
-- Indexes, character encoding, and the MariaDB read-only variable.
-
-**First verification pass:** 2026-10-29 against `hos`, โรงพยาบาลสระโบสถ์,
-MariaDB 10.5.29. The pass found 6 critical SQL issues, 8 high-impact schema
-mismatches, and 3 operational warnings. They are corrected in
-[`docs/verify-schema.md`](docs/verify-schema.md). Key facts: the database uses
-`tis620` (the app client uses `utf8mb4` for sqlx decoding); `opitemrece.hos_guid`
-is the primary key; `drugitems` has no legal
-category data; `doctor.licenseno` is the licence column; and the hospital
-profile address needs pharmacist correction.
-
-Open [`docs/verify-schema.md`](docs/verify-schema.md) for the checklist and
-[`docs/verify-queries.sql`](docs/verify-queries.sql) for the queries.
-
-Do not paste real patient names, HN, CID, or addresses into the verification
-documents. Use aggregate results or a fictional test patient.
-
-## Security and privacy
-
-- HOSxP is read-only at every layer: database grant, session mode, SQL guard,
-  and parameterized queries.
-- No patient data is written to disk in v1.
-- No patient data, credentials, or secrets are logged.
-- The login session is memory-only and cleared on logout or restart.
-- CID is masked in search results and shown in full only on the form preview
-  and the printed form.
-- The app never prints a signature. The prescriber signs the paper.
-- The app never writes an audit row to HOSxP.
-- Secret scanning is layered: GitHub secret scanning and push protection,
-  GitGuardian, and an optional local `ggshield` hook. See
-  [`docs/security-scanning.md`](docs/security-scanning.md).
-
-## Development
-
-The workspace is scaffolded. Prerequisites: Rust stable, the
-`wasm32-unknown-unknown` target, Trunk, and the Tauri CLI.
-
-```bash
-rustup target add wasm32-unknown-unknown
-cargo install trunk --locked
-cargo install tauri-cli --locked
-cargo test
-cargo tauri dev
-cargo tauri build
+```
+  ─────────────────────────────────────────
+   A controlled drug on a controlled form
+   is not a typing exercise. It is a
+   prescription the patient will carry.
+  ─────────────────────────────────────────
 ```
 
-The default test suite runs without a database. The app connects to HOSxP
-through the encrypted settings dialog. The client connection uses `utf8mb4`
-while the database remains `tis620`; MySQL converts the TIS-620 column data to
-UTF-8 for sqlx. Live database tests belong behind an `integration-tests`
-feature and a test/staging instance.
-
-## Contributing
-
-Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md) before
-opening a pull request. Documentation changes and schema verification results
-are welcome before the first code milestone.
-
-## License
-
-MIT. See [`LICENSE`](LICENSE).
+Addict Order is distributed under the [MIT License](LICENSE).
+Copyright (c) 2026 Suradet Pratomsak.
