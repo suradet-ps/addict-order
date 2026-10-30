@@ -1,0 +1,100 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  extends: [
+    "config:recommended",
+    // Pin GitHub Actions to commit digests; the tag stays in a comment.
+    "helpers:pinGitHubActionDigests",
+  ],
+
+  timezone: "Asia/Bangkok",
+  schedule: ["before 9am on monday"],
+  prHourlyLimit: 2,
+  prConcurrentLimit: 5,
+  rebaseWhen: "behind-base-branch",
+  labels: ["dependencies"],
+
+  // A controlled-document app is reviewed by a human, not merged by a bot.
+  automerge: false,
+  platformAutomerge: false,
+
+  // Keep one bot for dependency and security pull requests. Dependabot alerts
+  // stay enabled as the vulnerability source, but Dependabot security update
+  // pull requests are disabled to avoid duplicates.
+  vulnerabilityAlerts: {
+    enabled: true,
+    labels: ["security"],
+  },
+
+  // Monthly lockfile refresh for indirect dependencies. It still has to pass
+  // CI and a human review before merge.
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: ["before 5am on the first day of the month"],
+  },
+
+  ignorePaths: [
+    "**/target/**",
+    "app/dist/**",
+    "src-tauri/gen/**",
+  ],
+
+  packageRules: [
+    {
+      // A 0.x minor bump is often breaking. Keep minor and patch updates in
+      // separate pull requests for Cargo dependencies.
+      matchManagers: ["cargo"],
+      separateMinorPatch: true,
+    },
+    {
+      // Batch low-risk Rust patch updates into one reviewed pull request.
+      matchManagers: ["cargo"],
+      matchUpdateTypes: ["patch"],
+      groupName: "cargo patch updates",
+    },
+    {
+      // Tauri and its build crate must move together.
+      matchManagers: ["cargo"],
+      matchPackageNames: ["tauri", "tauri-build"],
+      groupName: "tauri",
+      separateMinorPatch: false,
+    },
+    {
+      // The encryption crates are released together.
+      matchPackageNames: ["encryptman", "encryptman-keyring"],
+      groupName: "encryptman",
+      separateMinorPatch: false,
+    },
+    {
+      // md-5 0.11 changes the digest type and breaks auth.rs formatting.
+      // Remove this rule after the hash formatting is updated and tested.
+      matchPackageNames: ["md-5"],
+      allowedVersions: "<0.11.0",
+    },
+    {
+      // sqlx 0.9 raises the MSRV to Rust 1.94; this workspace supports 1.85.
+      // Remove this rule when the MSRV and sqlx API changes are handled.
+      matchPackageNames: ["sqlx"],
+      allowedVersions: "<0.9.0",
+    },
+    {
+      // gtk 0.18 (via Tauri 2) requires glib ^0.18. The patched glib 0.20
+      // cannot be selected until the Tauri/GTK stack moves.
+      matchPackageNames: ["glib"],
+      allowedVersions: "<0.19.0",
+    },
+    {
+      // Keep the Ubuntu runner pinned. Tauri system packages are validated
+      // against 24.04; do not let Renovate jump to 26.04 automatically.
+      matchManagers: ["github-actions"],
+      matchPackageNames: ["ubuntu"],
+      enabled: false,
+    },
+    {
+      // Batch non-major GitHub Actions updates.
+      matchManagers: ["github-actions"],
+      matchUpdateTypes: ["patch", "minor"],
+      groupName: "github-actions non-major",
+    },
+  ],
+}

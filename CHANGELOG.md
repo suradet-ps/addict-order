@@ -17,7 +17,8 @@ Versioning once a release exists.
 - Brand master SVG.
 - Security scanning guide, `.gitguardian.yaml`, and an optional `ggshield`
   pre-commit hook.
-- Dependabot configuration for both Rust workspaces and GitHub Actions.
+- Renovate configuration for both Rust workspaces, GitHub Actions, and the
+  Rust toolchain.
 
 ### Changed
 
@@ -32,6 +33,9 @@ Versioning once a release exists.
   calls `__TAURI_INTERNALS__` directly.
 - Rewrote the README in the er-refill documentation style and updated the MIT
   copyright holder.
+- Replaced Dependabot version updates with Renovate. Dependabot alerts remain
+  enabled as the vulnerability source; Dependabot security update PRs are
+  disabled to avoid duplicate Renovate PRs.
 
 ### Fixed
 
@@ -43,6 +47,8 @@ Versioning once a release exists.
   print rule.
 - Enabled GitHub secret scanning, push protection, Dependabot alerts, and
   private vulnerability reporting for the public repository.
+- Switched dependency and security pull requests to Renovate; Dependabot
+  alerts remain the vulnerability source.
 
 ## [0.1.0] - 2026-10-29
 

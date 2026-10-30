@@ -29,19 +29,45 @@ Checked on 2026-10-30 for `suradet-ps/addict-order`:
 - The repository is public. Treat every push as public disclosure.
 - GitHub secret scanning is enabled.
 - GitHub push protection is enabled.
-- Dependabot alerts and Dependabot security updates are enabled.
+- Dependabot alerts are enabled.
+- Dependabot security update pull requests are disabled; Renovate handles
+  dependency and security pull requests.
 - GitHub private vulnerability reporting is enabled.
 - Non-provider patterns and validity checks could not be enabled through the
   REST API on this user-owned public repository. Check **Settings > Advanced
   Security** in the GitHub UI and enable them if the account's plan offers
   them.
-- No GitGuardian check run or repository-level configuration was detected.
-  Install the GitGuardian GitHub App from the dashboard to enable server-side
-  scanning and pull request checks.
+- The GitGuardian GitHub App is installed. The `GitGuardian Security Checks`
+  check run passed on pull request #1 on 2026-10-30; server-side monitoring and
+  pull request checks are active.
 
 The `.gitguardian.yaml` file in the repository root configures `ggshield` only.
 It does not change the GitGuardian dashboard, the GitGuardian GitHub App, or
 GitHub native secret scanning.
+
+## Renovate
+
+Dependency and security pull requests are handled by Renovate, configured in
+[`renovate.json5`](../renovate.json5).
+
+- The update window is Monday before 09:00 Asia/Bangkok. The Dependency
+  Dashboard issue tracks pending updates.
+- Cargo minor and patch updates are separate; low-risk patch updates are
+  grouped. Tauri, `tauri-build`, `encryptman`, and `encryptman-keyring` move
+  together.
+- GitHub Actions are pinned to commit digests; non-major updates are grouped.
+- The Ubuntu runner stays on 24.04. Tauri system packages are validated against
+  that image, so Renovate must not move it to 26.04 automatically.
+- `md-5` is held below 0.11.0 until `crates/core/src/auth.rs` handles the new
+  digest type.
+- `sqlx` is held below 0.9.0 until the workspace MSRV moves to Rust 1.94.
+- `glib` is held below 0.19.0 because `gtk 0.18` (via Tauri 2) requires
+  `glib ^0.18`; the patched 0.20.0 cannot be selected yet.
+- Dependabot remains the vulnerability-alert source, but its security update
+  pull requests are disabled so Renovate is the only PR author.
+
+The hold rules are deliberate. Remove a rule only after the code or toolchain
+change that makes the newer version buildable and testable.
 
 ## GitGuardian setup
 
@@ -111,8 +137,9 @@ After the first push, confirm in **Settings > Code security and analysis**:
 - Non-provider patterns: check and enable in the UI.
 - Validity checks: check and enable in the UI.
 - Dependabot alerts: enabled.
-- Dependabot security updates: enabled.
+- Dependabot security updates: disabled; Renovate handles dependency PRs.
 - Private vulnerability reporting: enabled.
+- Renovate: configured in `renovate.json5`.
 
 Then protect `main` with a ruleset or branch protection rule:
 
