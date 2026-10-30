@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest a change that fits the controlled-document scope.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Addict Order is a read-only document builder. Requests that add
+        prescribing, stock management, or HOSxP writes are out of scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve for the pharmacy?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the smallest change that solves the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Authentication
+        - Patient search
+        - Visit selection
+        - Order pull
+        - Catalog settings
+        - Form preview
+        - Print
+        - Settings
+        - Security
+        - Documentation
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This request does not require writing to HOSxP.
+          required: true
+        - label: This request does not print a signature.
+          required: true
+        - label: This request keeps the official form black on white.
+          required: true

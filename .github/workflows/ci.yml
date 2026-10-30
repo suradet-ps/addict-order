@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust and frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            file \
+            libayatana-appindicator3-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Format root workspace
+        run: cargo fmt --all --check
+
+      - name: Format app workspace
+        run: cargo fmt --manifest-path app/Cargo.toml --all --check
+
+      - name: Clippy core crates
+        run: cargo clippy -p addict-order-models -p addict-order-core -p addict-order-hosxp-connector --all-targets -- -D warnings
+
+      - name: Test core crates
+        run: cargo test -p addict-order-models -p addict-order-core -p addict-order-hosxp-connector
+
+      - name: Clippy Tauri shell
+        run: cargo clippy -p addict-order-tauri --all-targets -- -D warnings
+
+      - name: Test Tauri shell
+        run: cargo test -p addict-order-tauri
+
+      - name: Documentation
+        run: cargo doc --no-deps -p addict-order-models -p addict-order-core -p addict-order-hosxp-connector
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: trunk
+
+      - name: Clippy wasm app
+        run: cargo clippy --manifest-path app/Cargo.toml --target wasm32-unknown-unknown --all-targets -- -D warnings
+
+      - name: Build wasm app
+        run: trunk build
+        working-directory: app

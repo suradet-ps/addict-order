@@ -1,0 +1,38 @@
+# Separate workspace: this crate compiles for wasm32-unknown-unknown.
+[workspace]
+
+[package]
+name = "addict-order-app"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[lib]
+name = "addict_order_app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "addict-order-app"
+path = "src/main.rs"
+
+[dependencies]
+leptos = { version = "0.8", features = ["csr"] }
+addict-order-core = { path = "../crates/core" }
+addict-order-models = { path = "../crates/models" }
+chrono = "0.4"
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.6"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = [
+    "Document",
+    "Element",
+    "Event",
+    "HtmlElement",
+    "HtmlInputElement",
+    "HtmlTextAreaElement",
+    "SubmitEvent",
+    "Window",
+] }

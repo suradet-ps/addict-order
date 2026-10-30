@@ -1,0 +1,57 @@
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# Tauri
+/src-tauri/target/
+/src-tauri/gen/schemas/
+/src-tauri/gen/android/
+/src-tauri/gen/apple/
+
+# Leptos / Trunk
+/app/dist/
+/app/.trunk/
+.trunk/
+node_modules/
+dist/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Local settings and test data
+*.settings.json
+*.connection.json
+test-data/
+fixtures/private/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and coverage
+*.log
+coverage/
+lcov.info
+
+# Local runtime data and patch leftovers
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.orig
+*.rej
+.history/

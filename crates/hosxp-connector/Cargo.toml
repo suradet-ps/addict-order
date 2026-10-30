@@ -1,0 +1,24 @@
+[package]
+name = "addict-order-hosxp-connector"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Read-only HOSxP MySQL/MariaDB connector for Addict Order"
+
+[dependencies]
+addict-order-core = { path = "../core" }
+addict-order-models = { path = "../models" }
+async-trait.workspace = true
+chrono.workspace = true
+encryptman.workspace = true
+encryptman-keyring.workspace = true
+secrecy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

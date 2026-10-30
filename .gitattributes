@@ -1,0 +1,19 @@
+# Normalize text files to LF on every platform.
+* text=auto eol=lf
+
+# Binary assets must never be converted or diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.zip binary
+*.wasm binary
+
+# Windows scripts, if they are added later.
+*.bat text eol=crlf
+*.cmd text eol=crlf

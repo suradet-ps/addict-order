@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ตัวอย่างใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒</title>
+  <style>
+    :root {
+      --ink: #111111;
+      --paper: #ffffff;
+      --desk: #e8edf7;
+      --blue: #1d4ed8;
+      --yellow: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--desk);
+      color: var(--ink);
+    }
+
+    body {
+      font-family: "TH SarabunPSK", "Sarabun", "Leelawadee UI", Tahoma, sans-serif;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 24px;
+      background: var(--ink);
+      color: #ffffff;
+      border-bottom: 3px solid var(--yellow);
+    }
+
+    .toolbar__title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .toolbar__note {
+      font-size: 12px;
+      color: #d1d5db;
+    }
+
+    .toolbar__actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button {
+      height: 36px;
+      padding: 0 16px;
+      border: 2px solid #ffffff;
+      border-radius: 2px;
+      background: transparent;
+      color: #ffffff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button--primary {
+      border-color: var(--yellow);
+      background: var(--yellow);
+      color: var(--ink);
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 20mm auto;
+      padding: 12.7mm 15mm 18.2mm 25.1mm;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 12px 12px 0 var(--ink);
+      font-size: 15pt;
+      line-height: 1.15;
+    }
+
+    .form-code {
+      margin: 0 0 0 4mm;
+      color: #808080;
+      font-size: 14pt;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .title {
+      margin: 10mm 0 0;
+      text-align: center;
+      font-size: 18pt;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .title-rule {
+      width: 65%;
+      margin: 1.5mm auto 0;
+      border-top: 0.75pt solid var(--ink);
+    }
+
+    .date-line {
+      margin: 5mm 0 0;
+      text-align: right;
+      font-size: 15pt;
+      line-height: 1.4;
+    }
+
+    .prescriber {
+      margin: 6mm 0 0 3.5mm;
+      font-size: 15pt;
+      line-height: 1.25;
+    }
+
+    .line {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5mm;
+      min-height: 6.5mm;
+    }
+
+    .line__label {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .line__value {
+      flex: 1 1 auto;
+      min-width: 12mm;
+      padding: 0 1.5mm;
+      border-bottom: 1px dotted var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .line__value--short {
+      flex: 0 1 35mm;
+    }
+
+    .line__value--medium {
+      flex: 0 1 55mm;
+    }
+
+    .line__value--long {
+      flex: 1 1 auto;
+    }
+
+    .category {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2mm;
+      margin: 3.5mm 0 0 6mm;
+      font-size: 15pt;
+      line-height: 1.4;
+    }
+
+    .category__label {
+      font-weight: 700;
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 4.2mm;
+      height: 4.2mm;
+      border: 0.35mm solid var(--ink);
+      background: var(--paper);
+      font-size: 11pt;
+      line-height: 1;
+    }
+
+    .checkbox--checked::after {
+      content: "✓";
+      font-weight: 700;
+    }
+
+    .drug-table {
+      width: 100%;
+      margin: 3mm 0 0;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 14pt;
+      line-height: 1.15;
+    }
+
+    .drug-table th,
+    .drug-table td {
+      border: 0.17mm solid var(--ink);
+      padding: 0.4mm 1.5mm;
+      vertical-align: middle;
+    }
+
+    .drug-table th {
+      height: 19.6mm;
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .drug-table td {
+      height: 6.65mm;
+      overflow: hidden;
+    }
+
+    .drug-table .num {
+      text-align: center;
+      font-size: 14pt;
+    }
+
+    .drug-table .qty {
+      text-align: left;
+    }
+
+    .drug-table small {
+      display: block;
+      font-size: 12pt;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+
+    .drug-table .muted {
+      color: #555555;
+    }
+
+    .patient {
+      margin: 3mm 0 0 3.5mm;
+      font-size: 14pt;
+      line-height: 1.2;
+    }
+
+    .patient .line {
+      min-height: 6.2mm;
+    }
+
+    .patient .line__value {
+      min-width: 0;
+    }
+
+    .patient .line__value--medium {
+      flex-basis: 35mm;
+    }
+
+    .signature {
+      margin: 7mm 4mm 0 0;
+      text-align: right;
+      font-size: 15pt;
+      line-height: 1.4;
+    }
+
+    .notes {
+      margin: 2mm 0 0 4mm;
+      font-size: 12pt;
+      line-height: 1.15;
+    }
+
+    .notes__title {
+      margin: 0 0 1mm;
+      font-weight: 700;
+    }
+
+    .notes p {
+      margin: 0;
+      text-indent: 0;
+    }
+
+    .notes .indent {
+      margin-left: 6mm;
+    }
+
+    .legal {
+      margin: 2mm 0 0;
+      padding: 1mm 3mm;
+      border: 0.17mm solid var(--ink);
+      font-size: 12pt;
+      line-height: 1.2;
+    }
+
+    .legal p {
+      margin: 0;
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      html,
+      body {
+        background: #ffffff;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <div class="toolbar__title">Addict Order - print reference</div>
+      <div class="toolbar__note">Fictional sample data. Review layout only. Not a real prescription.</div>
+    </div>
+    <div class="toolbar__actions">
+      <button class="button button--primary" onclick="window.print()">Print A4</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <p class="form-code">แบบ ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒</p>
+
+    <h1 class="title">ใบสั่งจ่ายยาเสพติดให้โทษในประเภท ๒ หรือวัตถุออกฤทธิ์ในประเภท ๒</h1>
+    <div class="title-rule"></div>
+
+    <div class="date-line">
+      วันที่ <span class="line__value line__value--short">29</span>
+      เดือน <span class="line__value line__value--medium">ตุลาคม</span>
+      พ.ศ. <span class="line__value line__value--short">2569</span>
+    </div>
+
+    <section class="prescriber">
+      <div class="line">
+        <span class="line__label">ข้าพเจ้า</span>
+        <span class="line__value">นายแพทย์วิชัย ใจดี</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ใบอนุญาตประกอบวิชาชีพเวชกรรม/ทันตกรรม/การสัตวแพทย์ชั้นหนึ่ง เลขที่</span>
+        <span class="line__value">12345</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ปฏิบัติงาน ณ สถานพยาบาลชื่อ</span>
+        <span class="line__value">โรงพยาบาลตัวอย่าง</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ตั้งอยู่เลขที่</span>
+        <span class="line__value line__value--short">1</span>
+        <span class="line__label">หมู่ที่</span>
+        <span class="line__value line__value--short">1</span>
+        <span class="line__label">ตรอก/ซอย</span>
+        <span class="line__value line__value--medium">-</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ถนน</span>
+        <span class="line__value line__value--medium">ตัวอย่าง</span>
+        <span class="line__label">ตำบล/แขวง</span>
+        <span class="line__value">ตัวอย่าง</span>
+      </div>
+      <div class="line">
+        <span class="line__label">อำเภอ/เขต</span>
+        <span class="line__value line__value--medium">เมือง</span>
+        <span class="line__label">จังหวัด</span>
+        <span class="line__value line__value--medium">กรุงเทพฯ</span>
+        <span class="line__label">รหัสไปรษณีย์</span>
+        <span class="line__value line__value--short">10000</span>
+      </div>
+      <div class="line">
+        <span class="line__label">โทรศัพท์</span>
+        <span class="line__value line__value--medium">02-000-0000</span>
+        <span class="line__label">โทรสาร</span>
+        <span class="line__value line__value--medium">02-000-0001</span>
+      </div>
+    </section>
+
+    <div class="category">
+      <span class="category__label">ขอสั่งจ่าย</span>
+      <span class="checkbox checkbox--checked" aria-label="เลือกประเภทยาเสพติดให้โทษในประเภท ๒"></span>
+      <span>ยาเสพติดให้โทษในประเภท ๒</span>
+      <span class="checkbox" aria-label="ไม่เลือกประเภทวัตถุออกฤทธิ์ในประเภท ๒"></span>
+      <span>วัตถุออกฤทธิ์ในประเภท ๒</span>
+      <span>ดังรายการดังต่อไปนี้</span>
+    </div>
+
+    <table class="drug-table">
+      <colgroup>
+        <col style="width: 11.6mm" />
+        <col style="width: 29.3mm" />
+        <col style="width: 31.7mm" />
+        <col style="width: 24.9mm" />
+        <col style="width: 27.5mm" />
+        <col style="width: 44.8mm" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>ลำดับ</th>
+          <th>ชื่อตัวยาสำคัญ</th>
+          <th>ชื่อการค้า</th>
+          <th>ความแรง</th>
+          <th>ขนาดการใช้</th>
+          <th>
+            จำนวนที่สั่งจ่าย
+            <small>(ระบุหน่วยเป็น Amp, Vial, Tab, Cap, Patch ฯลฯ)</small>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">๑</td>
+          <td>Morphine sulfate</td>
+          <td>MST Continus</td>
+          <td>30 mg</td>
+          <td>1 เม็ด เช้า-เย็น</td>
+          <td class="qty">30 Tab</td>
+        </tr>
+        <tr>
+          <td class="num">๒</td>
+          <td>Fentanyl citrate</td>
+          <td>Fentanyl</td>
+          <td>50 mcg/mL</td>
+          <td>ตามแพทย์สั่ง</td>
+          <td class="qty">2 Amp</td>
+        </tr>
+        <tr>
+          <td class="num">๓</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td class="qty"></td>
+        </tr>
+        <tr>
+          <td class="num">๔</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td class="qty"></td>
+        </tr>
+        <tr>
+          <td class="num">๕</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td class="qty"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <section class="patient">
+      <div class="line">
+        <span class="line__label">ให้แก่ (ชื่อผู้รับการรักษาหรือชื่อเจ้าของสัตว์ซึ่งรับการรักษา)</span>
+        <span class="line__value">นายสมชาย ใจดี</span>
+      </div>
+      <div class="line">
+        <span class="line__label">บัตรประจำตัวประชาชนหรือบัตรประจำตัวอื่นที่ทางราชการออกให้ เลขที่</span>
+        <span class="line__value">1234567890123</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ที่อยู่ เลขที่</span>
+        <span class="line__value line__value--short">99</span>
+        <span class="line__label">หมู่ที่</span>
+        <span class="line__value line__value--short">4</span>
+        <span class="line__label">ตรอก/ซอย</span>
+        <span class="line__value line__value--medium">-</span>
+        <span class="line__label">ถนน</span>
+        <span class="line__value line__value--medium">-</span>
+      </div>
+      <div class="line">
+        <span class="line__label">ตำบล/แขวง</span>
+        <span class="line__value">ตัวอย่าง</span>
+        <span class="line__label">อำเภอ/เขต</span>
+        <span class="line__value line__value--medium">เมือง</span>
+        <span class="line__label">จังหวัด</span>
+        <span class="line__value line__value--medium">กรุงเทพฯ</span>
+      </div>
+      <div class="line">
+        <span class="line__label">รหัสไปรษณีย์</span>
+        <span class="line__value line__value--short">10000</span>
+        <span class="line__label">โทรศัพท์</span>
+        <span class="line__value">02-000-0000</span>
+      </div>
+    </section>
+
+    <div class="signature">
+      (ลายมือชื่อ) .............................................................. ผู้ออกใบสั่งจ่าย
+    </div>
+
+    <section class="notes">
+      <p class="notes__title">หมายเหตุ :</p>
+      <p>๑. ให้ขีดฆ่าข้อความที่ไม่ต้องการออก</p>
+      <p>
+        ๒. ให้ผู้รับการรักษาหรือเจ้าของสัตว์ซึ่งรับการรักษาส่งมอบต้นฉบับของเอกสารฉบับนี้ให้แก่สถานพยาบาลที่จ่ายยาเสพติดให้โทษหรือวัตถุออกฤทธิ์
+        ตามใบสั่งจ่ายให้ และให้สถานพยาบาลที่จ่ายยาเสพติดให้โทษหรือวัตถุออกฤทธิ์เก็บรักษาเอกสารฉบับนี้ไว้ เพื่อเป็นหลักฐานประกอบการจ่าย
+        ยาเสพติดให้โทษหรือวัตถุออกฤทธิ์
+      </p>
+      <p>
+        ๓. ให้สถานพยาบาลที่สั่งจ่ายยาเสพติดให้โทษหรือวัตถุออกฤทธิ์เก็บรักษาสำเนาเอกสารฉบับนี้ไว้ เพื่อเป็นหลักฐานประกอบการจ่ายยาเสพติดให้โทษ
+        หรือวัตถุออกฤทธิ์
+      </p>
+    </section>
+
+    <section class="legal">
+      <p>
+        ผู้รับอนุญาตจำหน่าย จะจำหน่ายยาเสพติดให้โทษในประเภท ๒ หรือวัตถุออกฤทธิ์ในประเภท ๒ ให้แก่บุคคลภายนอกที่ไม่ใช่ผู้ป่วยหรือสัตว์ป่วย
+        ซึ่งตนให้การรักษาได้ เฉพาะกรณีที่มีใบสั่งจ่ายยาเสพติดให้โทษในประเภท ๒ หรือวัตถุออกฤทธิ์ในประเภท ๒ จากผู้ประกอบวิชาชีพเวชกรรม
+        ผู้ประกอบวิชาชีพทันตกรรม หรือผู้ประกอบวิชาชีพการสัตวแพทย์ชั้นหนึ่ง แล้วแต่กรณี
+      </p>
+    </section>
+  </main>
+</body>
+</html>

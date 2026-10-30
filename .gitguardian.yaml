@@ -1,0 +1,46 @@
+# GitGuardian / ggshield configuration.
+#
+# This file is read by ggshield, the GitGuardian command-line scanner. It does
+# not configure the GitGuardian dashboard, the GitGuardian GitHub App, or
+# GitHub native secret scanning. Configure those on the server side.
+#
+# Local scan:
+#   ggshield secret scan path -r .
+#   ggshield secret scan repo .
+#
+# See docs/security-scanning.md.
+
+version: 2
+
+# Do not turn a detected secret into a successful exit code.
+exit_zero: false
+verbose: false
+
+secret:
+  # Never print a detected secret value to the terminal or CI logs.
+  show_secrets: false
+
+  # Build output and generated files are never committed. Excluding them keeps
+  # local scans fast and avoids noise from compiled artefacts.
+  ignored_paths:
+    - 'target/**'
+    - 'app/dist/**'
+    - 'src-tauri/gen/**'
+    - '**/node_modules/**'
+    - '**/.trunk/**'
+
+    # Binary reference documents: the official blank prescription form. They
+    # contain no credentials, and text extraction only produces noise. Keep
+    # this list narrow; do not exclude every PDF or DOCX in the repository.
+    - 'ใบสั่งจ่าย ยส2.docx'
+    - 'ใบสั่งจ่าย ยส2.pdf'
+
+  # Known non-secret test fixtures. Prefer changing a fixture over adding an
+  # entry here. These are synthetic values used by unit tests.
+  ignored_matches:
+    - name: 'synthetic database password in hosxp-connector config tests'
+      match: 's3cret!p@ss'
+    - name: 'MD5 test vector for the string "password"'
+      match: '5f4dcc3b5aa765d61d8327deb882cf99'
+    - name: 'MD5 test vector for the string "123456"'
+      match: 'e10adc3949ba59abbe56e057f20f883e'

@@ -1,0 +1,55 @@
+name: Schema verification result
+description: Report the result of one or more checks from docs/verify-schema.md.
+title: "schema: "
+labels: ["schema"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include patient names, HN, CID, addresses, credentials, or
+        hospital secrets. Use aggregate results or masked samples.
+  - type: input
+    id: instance
+    attributes:
+      label: HOSxP instance
+      description: Use a code or non-sensitive label.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Server version
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks
+      description: List the verification IDs and results.
+      placeholder: |
+        V4 [P] officer columns exist
+        V8 [P] patient columns exist
+        V18 [F] full address id join returns no rows
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Aggregate counts, column lists, or masked samples.
+    validations:
+      required: true
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Decisions and fallbacks
+      description: What should the implementation use for each failed or missing item?
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This report contains no patient identifiers or secrets.
+          required: true
+        - label: This report contains no credentials.
+          required: true
