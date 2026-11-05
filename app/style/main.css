@@ -1490,7 +1490,7 @@ button:disabled {
 }
 
 .f-code {
-  margin: 0 0 0 4mm;
+  margin: 0.85mm 0 0 4mm;
   color: #808080;
   font-size: 14pt;
   font-weight: 700;
@@ -1498,7 +1498,7 @@ button:disabled {
 }
 
 .f-title {
-  margin: 8mm 0 0;
+  margin: 7.55mm 0 0;
   text-align: center;
   font-size: 18pt;
   font-weight: 700;
@@ -1506,29 +1506,50 @@ button:disabled {
 }
 
 .f-title-rule {
-  width: 65%;
+  width: 86mm;
   margin: 1.5mm auto 0;
   border-top: 0.75pt solid #000000;
 }
 
 .f-date {
-  margin: 3.5mm 4mm 0 0;
-  text-align: right;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.95mm;
+  margin: 5.5mm 4mm 0 0;
   font-size: 15pt;
   line-height: 1.3;
+  white-space: nowrap;
+}
+
+.f-date__label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.f-date .f-value--short {
+  flex: 0 0 12.8mm;
+}
+
+.f-date .f-value--medium {
+  flex: 0 0 30.8mm;
 }
 
 .f-prescriber {
-  margin: 5mm 0 0 3.5mm;
+  margin: 6.4mm 5mm 0 4.9mm;
   font-size: 15pt;
   line-height: 1.15;
+}
+
+.f-prescriber .f-line:first-child {
+  margin-left: 25mm;
 }
 
 .f-line {
   display: flex;
   align-items: baseline;
   gap: 1.5mm;
-  min-height: 6.2mm;
+  min-height: 6.9mm;
 }
 
 .f-label {
@@ -1540,10 +1561,14 @@ button:disabled {
   flex: 1 1 auto;
   min-width: 12mm;
   padding: 0 1.5mm;
-  border-bottom: 1px dotted #000000;
+  border-bottom: 0.3mm dotted #000000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.f-value:empty::before {
+  content: "\00a0";
 }
 
 .f-value--short {
@@ -1554,12 +1579,84 @@ button:disabled {
   flex: 0 1 55mm;
 }
 
+.f-value--house {
+  flex: 0 1 34mm;
+}
+
+.f-value--moo {
+  flex: 0 1 37.6mm;
+}
+
+.f-value--soi-h {
+  flex: 0 1 44.7mm;
+}
+
+.f-value--road-h {
+  flex: 0 1 56.5mm;
+}
+
+.f-value--district-h {
+  flex: 0 1 47.2mm;
+}
+
+.f-value--province-h {
+  flex: 0 1 36.9mm;
+}
+
+.f-value--postal-h {
+  flex: 1 1 25.7mm;
+}
+
+.f-value--phone-h {
+  flex: 0 1 51.4mm;
+}
+
+.f-value--fax {
+  flex: 1 1 82.4mm;
+}
+
+.f-value--house-p {
+  flex: 0 1 13.7mm;
+}
+
+.f-value--moo-p {
+  flex: 0 1 14.4mm;
+}
+
+.f-value--soi-p {
+  flex: 0 1 35.2mm;
+}
+
+.f-value--road-p {
+  flex: 1 1 48.8mm;
+}
+
+.f-value--subdistrict-p {
+  flex: 0 1 34.5mm;
+}
+
+.f-value--district-p {
+  flex: 0 1 35.2mm;
+}
+
+.f-value--province-p {
+  flex: 1 1 45.6mm;
+}
+
+.f-value--postal-p {
+  flex: 0 1 32.8mm;
+}
+
+.f-value--phone-p {
+  flex: 1 1 92.8mm;
+}
+
 .f-category {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 2mm;
-  margin: 3mm 0 0 6mm;
+  margin: 1.8mm 0 0 6mm;
   font-size: 15pt;
   line-height: 1.35;
 }
@@ -1574,15 +1671,18 @@ button:disabled {
   justify-content: center;
   width: 4.2mm;
   height: 4.2mm;
-  border: 0.25mm solid #000000;
+  border: 0.35mm solid #000000;
   background: #ffffff;
-  font-size: 11pt;
+  font-size: 0;
   line-height: 1;
+  overflow: hidden;
 }
 
-.f-checkbox--checked::after {
-  content: "✓";
-  font-weight: 700;
+.f-checkbox--checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.4 L4.1 7.5 L8 2.6' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 3.2mm 3.2mm;
 }
 
 .f-table {
@@ -1602,14 +1702,15 @@ button:disabled {
 }
 
 .f-table th {
-  height: 18.5mm;
+  height: 19.6mm;
+  vertical-align: top;
   text-align: center;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .f-table td {
-  height: 6.5mm;
+  height: 6.65mm;
   padding-top: 0.25mm;
   padding-bottom: 0.25mm;
   overflow: hidden;
@@ -1623,38 +1724,34 @@ button:disabled {
   display: block;
   font-size: 12pt;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.5;
 }
 
 .f-patient {
-  margin: 2.5mm 0 0 3.5mm;
+  margin: 2.5mm 5mm 0 4.9mm;
   font-size: 14pt;
   line-height: 1.1;
 }
 
 .f-patient .f-line {
-  min-height: 6.2mm;
+  min-height: 6.5mm;
 }
 
 .f-patient .f-value {
   min-width: 0;
 }
 
-.f-patient .f-value--medium {
-  flex-basis: 35mm;
-}
-
 .f-signature {
-  margin: 4mm 4mm 0 0;
+  margin: 9.7mm 4mm 0 0;
   text-align: right;
   font-size: 15pt;
   line-height: 1.3;
 }
 
 .f-notes {
-  margin: 1mm 0 0 4mm;
+  margin: 3mm -7.2mm 0 4.9mm;
   font-size: 12pt;
-  line-height: 1.05;
+  line-height: 1.25;
 }
 
 .f-notes__title {
@@ -1667,11 +1764,11 @@ button:disabled {
 }
 
 .f-legal {
-  margin: 1mm 0 0;
-  padding: 0.8mm 3mm;
+  margin: 0.8mm 0.4mm 0 -1.35mm;
+  padding: 0.8mm 0 0.8mm 2.4mm;
   border: 0.17mm solid #000000;
   font-size: 12pt;
-  line-height: 1.1;
+  line-height: 1.3;
 }
 
 .f-legal p {

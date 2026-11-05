@@ -51,6 +51,30 @@ struct SheetData {
     flags: CategoryFlags,
 }
 
+/// The strength column must hold the strength only. When the configured print
+/// unit is repeated at the end of the strength text, drop it so the value fits
+/// the narrow official column; the unit is still printed in the quantity column.
+fn strength_for_print(strength: &str, print_unit: &str) -> String {
+    let strength = strength.trim();
+    let print_unit = print_unit.trim();
+    if print_unit.is_empty() {
+        return strength.to_string();
+    }
+    let lower = strength.to_lowercase();
+    let unit_lower = print_unit.to_lowercase();
+    match lower.strip_suffix(&unit_lower) {
+        Some(prefix) => {
+            let stripped = strength[..prefix.len()].trim_end_matches([' ', ',', '/']);
+            if stripped.is_empty() {
+                strength.to_string()
+            } else {
+                stripped.to_string()
+            }
+        }
+        None => strength.to_string(),
+    }
+}
+
 fn sheet_data(state: &AppState) -> SheetData {
     let patient = state.selected_patient.get().unwrap_or(PatientDetail {
         hn: String::new(),
@@ -111,7 +135,7 @@ fn sheet_data(state: &AppState) -> SheetData {
             .map(|line| SheetLine {
                 generic: line.generic_name.clone(),
                 trade: line.trade_name.clone(),
-                strength: line.strength_text.clone(),
+                strength: strength_for_print(&line.strength_text, &line.print_unit),
                 sig: line.sig.clone(),
                 qty_unit: format!("{} {}", format_qty_i64(line.quantity), line.print_unit),
             })
@@ -160,8 +184,6 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
             } else {
                 "f-checkbox"
             };
-            let narcotic_mark = if data.flags.narcotic_2 { "✓" } else { "" };
-            let psychotropic_mark = if data.flags.psychotropic_2 { "✓" } else { "" };
 
             view! {
                 <article class="sheet">
@@ -170,9 +192,12 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
                     <div class="f-title-rule"></div>
 
                     <div class="f-date">
-                        "วันที่ " <span class="f-value f-value--short">{data.day}</span>
-                        " เดือน " <span class="f-value f-value--medium">{data.month}</span>
-                        " พ.ศ. " <span class="f-value f-value--short">{data.year}</span>
+                        <span class="f-date__label">"วันที่"</span>
+                        <span class="f-value f-value--short">{data.day}</span>
+                        <span class="f-date__label">"เดือน"</span>
+                        <span class="f-value f-value--medium">{data.month}</span>
+                        <span class="f-date__label">"พ.ศ."</span>
+                        <span class="f-value f-value--short">{data.year}</span>
                     </div>
 
                     <section class="f-prescriber">
@@ -184,39 +209,39 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
                         <FormLine label="ปฏิบัติงาน ณ สถานพยาบาลชื่อ".to_string() value=data.hospital_name />
                         <div class="f-line">
                             <span class="f-label">"ตั้งอยู่เลขที่"</span>
-                            <span class="f-value f-value--short">{data.hospital_house}</span>
+                            <span class="f-value f-value--house">{data.hospital_house}</span>
                             <span class="f-label">"หมู่ที่"</span>
-                            <span class="f-value f-value--short">{data.hospital_moo}</span>
+                            <span class="f-value f-value--moo">{data.hospital_moo}</span>
                             <span class="f-label">"ตรอก/ซอย"</span>
-                            <span class="f-value f-value--medium">{data.hospital_soi}</span>
+                            <span class="f-value f-value--soi-h">{data.hospital_soi}</span>
                         </div>
                         <div class="f-line">
                             <span class="f-label">"ถนน"</span>
-                            <span class="f-value f-value--medium">{data.hospital_road}</span>
+                            <span class="f-value f-value--road-h">{data.hospital_road}</span>
                             <span class="f-label">"ตำบล/แขวง"</span>
                             <span class="f-value">{data.hospital_subdistrict}</span>
                         </div>
                         <div class="f-line">
                             <span class="f-label">"อำเภอ/เขต"</span>
-                            <span class="f-value f-value--medium">{data.hospital_district}</span>
+                            <span class="f-value f-value--district-h">{data.hospital_district}</span>
                             <span class="f-label">"จังหวัด"</span>
-                            <span class="f-value f-value--medium">{data.hospital_province}</span>
+                            <span class="f-value f-value--province-h">{data.hospital_province}</span>
                             <span class="f-label">"รหัสไปรษณีย์"</span>
-                            <span class="f-value f-value--short">{data.hospital_postal}</span>
+                            <span class="f-value f-value--postal-h">{data.hospital_postal}</span>
                         </div>
                         <div class="f-line">
                             <span class="f-label">"โทรศัพท์"</span>
-                            <span class="f-value f-value--medium">{data.hospital_phone}</span>
+                            <span class="f-value f-value--phone-h">{data.hospital_phone}</span>
                             <span class="f-label">"โทรสาร"</span>
-                            <span class="f-value f-value--medium">{data.hospital_fax}</span>
+                            <span class="f-value f-value--fax">{data.hospital_fax}</span>
                         </div>
                     </section>
 
                     <div class="f-category">
                         <span class="f-category__label">"ขอสั่งจ่าย"</span>
-                        <span class=narcotic_class>{narcotic_mark}</span>
+                        <span class=narcotic_class></span>
                         <span>"ยาเสพติดให้โทษในประเภท ๒"</span>
-                        <span class=psychotropic_class>{psychotropic_mark}</span>
+                        <span class=psychotropic_class></span>
                         <span>"วัตถุออกฤทธิ์ในประเภท ๒"</span>
                         <span>"ดังรายการดังต่อไปนี้"</span>
                     </div>
@@ -257,27 +282,27 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
                         />
                         <div class="f-line">
                             <span class="f-label">"ที่อยู่ เลขที่"</span>
-                            <span class="f-value f-value--short">{data.patient_house}</span>
+                            <span class="f-value f-value--house-p">{data.patient_house}</span>
                             <span class="f-label">"หมู่ที่"</span>
-                            <span class="f-value f-value--short">{data.patient_moo}</span>
+                            <span class="f-value f-value--moo-p">{data.patient_moo}</span>
                             <span class="f-label">"ตรอก/ซอย"</span>
-                            <span class="f-value f-value--medium">{data.patient_soi}</span>
+                            <span class="f-value f-value--soi-p">{data.patient_soi}</span>
                             <span class="f-label">"ถนน"</span>
-                            <span class="f-value f-value--medium">{data.patient_road}</span>
+                            <span class="f-value f-value--road-p">{data.patient_road}</span>
                         </div>
                         <div class="f-line">
                             <span class="f-label">"ตำบล/แขวง"</span>
-                            <span class="f-value">{data.patient_subdistrict}</span>
+                            <span class="f-value f-value--subdistrict-p">{data.patient_subdistrict}</span>
                             <span class="f-label">"อำเภอ/เขต"</span>
-                            <span class="f-value f-value--medium">{data.patient_district}</span>
+                            <span class="f-value f-value--district-p">{data.patient_district}</span>
                             <span class="f-label">"จังหวัด"</span>
-                            <span class="f-value f-value--medium">{data.patient_province}</span>
+                            <span class="f-value f-value--province-p">{data.patient_province}</span>
                         </div>
                         <div class="f-line">
                             <span class="f-label">"รหัสไปรษณีย์"</span>
-                            <span class="f-value f-value--short">{data.patient_postal}</span>
+                            <span class="f-value f-value--postal-p">{data.patient_postal}</span>
                             <span class="f-label">"โทรศัพท์"</span>
-                            <span class="f-value">{data.patient_phone}</span>
+                            <span class="f-value f-value--phone-p">{data.patient_phone}</span>
                         </div>
                     </section>
 
