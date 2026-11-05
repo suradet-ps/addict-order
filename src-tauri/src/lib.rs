@@ -6,7 +6,89 @@ mod settings;
 mod state;
 
 use state::AppState;
-use tauri::Manager;
+use tauri::{Manager, PhysicalPosition, PhysicalSize};
+
+/// Fit the main window inside the monitor work area, then center it there.
+/// A fixed 1280x900 window does not fit on 1366x768 or 1600x900 displays once
+/// the taskbar and title bar are taken into account.
+fn fit_and_center_main_window(app: &tauri::AppHandle) {
+    let Some(window) = app.get_webview_window("main") else {
+        error::dev_log("main window not found for centering");
+        return;
+    };
+
+    let monitor = match window.current_monitor() {
+        Ok(Some(monitor)) => monitor,
+        Ok(None) => match window.primary_monitor() {
+            Ok(Some(monitor)) => monitor,
+            Ok(None) => {
+                error::dev_log("no monitor found for centering");
+                return;
+            }
+            Err(error) => {
+                error::dev_log(&format!("primary monitor query failed: {error}"));
+                return;
+            }
+        },
+        Err(error) => {
+            error::dev_log(&format!("current monitor query failed: {error}"));
+            return;
+        }
+    };
+
+    let scale = monitor.scale_factor();
+    let work_area = monitor.work_area();
+
+    // `set_size` controls the client area on Windows, while `set_position`
+    // places the outer window. Account for the title bar and borders so the
+    // visible window is centered and does not spill past the taskbar.
+    let (outer_size, inner_size) = match (window.outer_size(), window.inner_size()) {
+        (Ok(outer), Ok(inner)) => (outer, inner),
+        (Err(error), _) | (_, Err(error)) => {
+            error::dev_log(&format!("window size query failed: {error}"));
+            return;
+        }
+    };
+    let decoration_width = outer_size.width.saturating_sub(inner_size.width);
+    let decoration_height = outer_size.height.saturating_sub(inner_size.height);
+    let margin = (24.0 * scale).round().max(0.0) as u32;
+    let max_inner_width = work_area
+        .size
+        .width
+        .saturating_sub(margin.saturating_mul(2).saturating_add(decoration_width))
+        .max(1);
+    let max_inner_height = work_area
+        .size
+        .height
+        .saturating_sub(margin.saturating_mul(2).saturating_add(decoration_height))
+        .max(1);
+    let inner_width = ((1280.0 * scale).round() as u32)
+        .min(max_inner_width)
+        .max(1);
+    let inner_height = ((900.0 * scale).round() as u32)
+        .min(max_inner_height)
+        .max(1);
+
+    if let Err(error) = window.set_size(PhysicalSize::new(inner_width, inner_height)) {
+        error::dev_log(&format!("window resize failed: {error}"));
+        return;
+    }
+
+    let outer_size = match window.outer_size() {
+        Ok(size) => size,
+        Err(error) => {
+            error::dev_log(&format!("window outer size query failed: {error}"));
+            return;
+        }
+    };
+    let x =
+        work_area.position.x + ((work_area.size.width.saturating_sub(outer_size.width)) / 2) as i32;
+    let y = work_area.position.y
+        + ((work_area.size.height.saturating_sub(outer_size.height)) / 2) as i32;
+    if let Err(error) = window.set_position(PhysicalPosition::new(x, y)) {
+        error::dev_log(&format!("window center failed: {error}"));
+    }
+}
 
 pub fn run() {
     tauri::Builder::default()
@@ -27,6 +109,7 @@ pub fn run() {
                 commands::run_health_monitor(monitor_state).await;
             });
             app.manage(state);
+            fit_and_center_main_window(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
