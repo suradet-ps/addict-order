@@ -7,6 +7,7 @@ use crate::api;
 use crate::components::icons::{IconCheck, IconSearch, IconSettings, IconX};
 use crate::state::{AppState, Banner, SettingsTab};
 
+/// Settings dialog for HOSxP connection, narcotic catalog, and hospital header.
 #[component]
 pub fn SettingsModal(state: AppState) -> impl IntoView {
     let connection_state = state.clone();
@@ -86,6 +87,7 @@ pub fn SettingsModal(state: AppState) -> impl IntoView {
     }
 }
 
+/// HOSxP connection fields. Credentials are encrypted before they are saved.
 #[component]
 fn ConnectionTab(state: AppState) -> impl IntoView {
     let host = RwSignal::new(String::new());
@@ -198,6 +200,7 @@ fn ConnectionTab(state: AppState) -> impl IntoView {
     }
 }
 
+/// Narcotic catalog editor: search drugs, add icodes, and set print metadata.
 #[component]
 fn CatalogTab(state: AppState) -> impl IntoView {
     let catalog = RwSignal::new(Catalog::default());
@@ -460,6 +463,7 @@ fn CatalogRow(
     }
 }
 
+/// Printed hospital header. The values are pharmacist-verified settings.
 #[component]
 fn HospitalTab(state: AppState) -> impl IntoView {
     let hospital = RwSignal::new(state.hospital.get_untracked());

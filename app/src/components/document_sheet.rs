@@ -154,6 +154,8 @@ fn FormLine(label: String, value: String) -> impl IntoView {
     }
 }
 
+/// Official A4 prescription sheet. The screen preview and print output share
+/// this DOM; the height effect keeps confirmation and printing inside one page.
 #[component]
 pub fn DocumentSheet(state: AppState) -> impl IntoView {
     let sheet_ref = NodeRef::<leptos::html::Article>::new();

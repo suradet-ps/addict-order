@@ -6,6 +6,7 @@ use crate::api::{self, ApiErrorKind};
 use crate::components::icons::{BrandArt, BrandMark, IconArrowRight, IconLock, IconSettings};
 use crate::state::{AppState, Banner, ConnectionHealth, SettingsTab};
 
+/// Login gate for the HOSxP officer account.
 #[component]
 pub fn LoginScreen(state: AppState) -> impl IntoView {
     let username = RwSignal::new(String::new());

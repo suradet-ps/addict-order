@@ -47,6 +47,8 @@ pub fn build_lines(
     Ok(grouped.into_values().collect())
 }
 
+/// Maps one HOSxP order line to the form, using catalog metadata as the
+/// primary source and cleaning the sig before it is printed.
 fn line_from_order(
     order: &OrderLine,
     config: &NarcoticDrugConfig,
@@ -116,6 +118,16 @@ fn normalize_sig_text(raw: &str) -> String {
                 .get(index + 1)
                 .is_some_and(|next| next.is_ascii_digit());
             if ch == '…' || !(previous_is_digit && next_is_digit) {
+                let is_leader =
+                    |candidate: Option<&char>| candidate.is_some_and(|c| *c == '.' || *c == '…');
+                let in_run = (index > 0 && is_leader(chars.get(index - 1)))
+                    || is_leader(chars.get(index + 1));
+                // A leader run often replaces the space between two words.
+                // Keep one separator so removing it cannot merge the words.
+                if (ch == '…' || in_run) && !out.is_empty() && !previous_was_space {
+                    out.push(' ');
+                    previous_was_space = true;
+                }
                 continue;
             }
         }
@@ -266,6 +278,12 @@ mod tests {
             normalize_sig_text("รับประทานครั้งละ 0.5 mg"),
             "รับประทานครั้งละ 0.5 mg"
         );
+    }
+
+    #[test]
+    fn dot_leader_keeps_word_boundary() {
+        assert_eq!(normalize_sig_text("ครั้งละ.....เม็ด"), "ครั้งละ เม็ด");
+        assert_eq!(normalize_sig_text("p.o."), "po");
     }
 
     #[test]

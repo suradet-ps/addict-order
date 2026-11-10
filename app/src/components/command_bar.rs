@@ -7,6 +7,8 @@ use crate::actions;
 use crate::components::icons::{IconArrowRight, IconCheck, IconPrint, IconSearch, IconUser, IconX};
 use crate::state::AppState;
 
+/// Four-step workflow rail: patient search, visit, prescriber, and document
+/// actions.
 #[component]
 pub fn CommandBar(state: AppState) -> impl IntoView {
     let on_visit_change = {

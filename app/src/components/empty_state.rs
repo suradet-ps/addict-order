@@ -5,6 +5,7 @@ use leptos::prelude::*;
 use crate::components::icons::{BrandMark, IconSettings};
 use crate::state::{AppState, SettingsTab};
 
+/// Quiet desk shown before a patient is selected.
 #[component]
 pub fn EmptyDesk() -> impl IntoView {
     view! {

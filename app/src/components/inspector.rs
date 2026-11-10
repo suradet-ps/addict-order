@@ -8,6 +8,7 @@ use leptos::prelude::*;
 use crate::components::icons::{IconCheck, IconUser, IconWarning};
 use crate::state::AppState;
 
+/// Review sidebar: patient, visit, prescriber, sig editing, and validation.
 #[component]
 pub fn Inspector(state: AppState) -> impl IntoView {
     let patient_state = state.clone();
@@ -146,6 +147,7 @@ pub fn Inspector(state: AppState) -> impl IntoView {
                                 children=move |line| {
                                     let line_state = sig_state.clone();
                                     let line_id = line.line_id.clone();
+                                    let value_id = line_id.clone();
                                     let drug = if line.trade_name.trim().is_empty() {
                                         line.generic_name.clone()
                                     } else {
@@ -161,7 +163,16 @@ pub fn Inspector(state: AppState) -> impl IntoView {
                                             <textarea
                                                 class="sig-editor__input"
                                                 rows="2"
-                                                prop:value=line.sig.clone()
+                                                prop:value=move || {
+                                                    let _ = line_state.lines_revision.get();
+                                                    line_state
+                                                        .lines
+                                                        .get_untracked()
+                                                        .into_iter()
+                                                        .find(|current| current.line_id == value_id)
+                                                        .map(|current| current.sig)
+                                                        .unwrap_or_default()
+                                                }
                                                 on:input=move |ev| {
                                                     line_state
                                                         .set_line_sig(

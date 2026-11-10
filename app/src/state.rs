@@ -99,6 +99,10 @@ pub struct AppState {
 
     pub order_busy: RwSignal<bool>,
     pub lines: RwSignal<Vec<PrescriptionLine>>,
+    /// Bumped when an order fetch or reset replaces the line set. The sig
+    /// editor watches this so a refetch refreshes the textarea without making
+    /// local typing re-render it on every keystroke.
+    pub lines_revision: RwSignal<u64>,
     pub order_count: RwSignal<usize>,
     pub prescriber: RwSignal<Prescriber>,
     /// True once the operator chooses a prescriber in the dialog or edits the
@@ -143,6 +147,7 @@ impl AppState {
             selected_visit: RwSignal::new(None),
             order_busy: RwSignal::new(false),
             lines: RwSignal::new(Vec::new()),
+            lines_revision: RwSignal::new(0),
             order_count: RwSignal::new(0),
             prescriber: RwSignal::new(Prescriber::default()),
             prescriber_user_set: RwSignal::new(false),
@@ -176,11 +181,13 @@ impl AppState {
         self.clear_patient_work();
     }
 
+    /// Clears every patient-scoped value, including the print snapshot.
     pub fn clear_patient_work(&self) {
         self.selected_patient.set(None);
         self.visits.set(Vec::new());
         self.selected_visit.set(None);
         self.lines.set(Vec::new());
+        self.lines_revision.update(|revision| *revision += 1);
         self.order_count.set(0);
         self.prescriber.set(Prescriber::default());
         self.prescriber_user_set.set(false);
@@ -189,11 +196,13 @@ impl AppState {
         self.form_overflow.set(false);
     }
 
+    /// Starts a fresh document for a patient and clears the previous draft.
     pub fn select_patient(&self, patient: PatientDetail) {
         self.selected_patient.set(Some(patient));
         self.visits.set(Vec::new());
         self.selected_visit.set(None);
         self.lines.set(Vec::new());
+        self.lines_revision.update(|revision| *revision += 1);
         self.order_count.set(0);
         self.prescriber.set(Prescriber::default());
         self.prescriber_user_set.set(false);
@@ -202,6 +211,7 @@ impl AppState {
         self.form_overflow.set(false);
     }
 
+    /// Selects the visit used for the prescription date and order lookup.
     pub fn select_visit(&self, visit: VisitSummary) {
         // A prescriber chosen by the operator wins over the visit doctor.
         // Visit changes may update the drug lines, but must not silently
@@ -216,12 +226,15 @@ impl AppState {
         }
         self.selected_visit.set(Some(visit));
         self.lines.set(Vec::new());
+        self.lines_revision.update(|revision| *revision += 1);
         self.order_count.set(0);
         self.confirmed.set(None);
         self.printed_at.set(None);
         self.form_overflow.set(false);
     }
 
+    /// Applies fetched order lines and the HOSxP default prescriber. An
+    /// operator-selected prescriber is preserved.
     pub fn apply_orders(
         &self,
         lines: Vec<PrescriptionLine>,
@@ -229,6 +242,7 @@ impl AppState {
         prescriber: Option<Prescriber>,
     ) {
         self.lines.set(lines);
+        self.lines_revision.update(|revision| *revision += 1);
         self.order_count.set(order_count);
         // The order doctor is only a default. Never overwrite a prescriber
         // the operator selected explicitly, otherwise a pharmacist who is
@@ -255,6 +269,7 @@ impl AppState {
         self.printed_at.set(None);
     }
 
+    /// Stores a prescriber chosen by the operator and pins it against auto-fill.
     pub fn set_prescriber(&self, prescriber: Prescriber) {
         self.prescriber_user_set
             .set(!prescriber.name.trim().is_empty());
