@@ -1103,8 +1103,13 @@ FROM drugusage;
 `sp_use.name1` on 99.7%. The text columns are usable. The app still needs the
 catalog default sig because some order lines have no sig (see V39).
 
-**Pass criteria:** At least one text column provides a usable sig. The preferred
-column order is confirmed against real data.
+**Sig assembly:** Join every non-empty `drugusage.name1`, `name2`, `name3`,
+then `sp_use.name1`, `name2`, `name3` with spaces, in that order. Do not pick a
+single column. The earlier `COALESCE(name3, name2, name1)` approach returned
+only the tail of long directions and was replaced on 2026-11-10.
+
+**Pass criteria:** At least one text column provides a usable sig and the
+assembled text is checked against a known HOSxP order during the pilot.
 
 Status: `[P]`
 

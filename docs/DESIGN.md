@@ -317,13 +317,18 @@ The inspector is a stack of square cards:
    - "เลือกแพทย์" action.
    - When the operator has pinned a prescriber, show that the choice will not
      be replaced by the order doctor when drug lines are fetched.
-4. **Checks**
+4. **Directions for use**
+   - One textarea per drug line, pre-filled from the cleaned HOSxP sig.
+   - The operator can shorten or correct the text before printing.
+   - Editing a sig clears the confirmation snapshot.
+5. **Checks**
    - Required fields complete.
    - Address complete.
    - Legal category complete.
    - Row count and five-row limit.
+   - The rendered sheet fits one A4 page.
    - Warnings in amber, errors in red.
-5. **Actions**
+6. **Actions**
    - Confirm.
    - Print.
    - Clear patient.
@@ -445,11 +450,15 @@ inspector may show a wider internal table with status and edit actions.
   - address complete (green or amber)
   - five-row limit (green or red)
   - licence present (green or red)
+  - one-page fit (green or red)
 - Buttons:
   - "ยืนยันและล็อกข้อมูล" yellow.
   - "ยกเลิก" secondary.
 - After confirmation, the dialog closes and the print button becomes active.
 - The confirmation time is shown in the inspector.
+- If the rendered sheet exceeds one A4 page, the dialog cannot open. The
+  operator shortens the sig in the directions editor; directions are never
+  clipped silently.
 
 ### 7.10 Settings modal
 

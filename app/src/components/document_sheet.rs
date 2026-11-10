@@ -156,6 +156,23 @@ fn FormLine(label: String, value: String) -> impl IntoView {
 
 #[component]
 pub fn DocumentSheet(state: AppState) -> impl IntoView {
+    let sheet_ref = NodeRef::<leptos::html::Article>::new();
+    let measure_state = state.clone();
+    Effect::new(move |_| {
+        // Track every value that can change the printed height.
+        let _ = measure_state.selected_patient.get();
+        let _ = measure_state.selected_visit.get();
+        let _ = measure_state.prescriber.get();
+        let _ = measure_state.hospital.get();
+        let _ = measure_state.lines.get();
+
+        if let Some(sheet) = sheet_ref.get() {
+            let height = f64::from(sheet.offset_height());
+            // A4 is 297 mm = 1122.5 px at 96 dpi. Allow the 2 px screen border.
+            measure_state.form_overflow.set(height > 1128.0);
+        }
+    });
+
     view! {
         {move || {
             let data = sheet_data(&state);
@@ -186,7 +203,7 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
             };
 
             view! {
-                <article class="sheet">
+                <article class="sheet" node_ref=sheet_ref>
                     <p class="f-code">"แบบ ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒"</p>
                     <h1 class="f-title">"ใบสั่งจ่ายยาเสพติดให้โทษในประเภท ๒ หรือวัตถุออกฤทธิ์ในประเภท ๒"</h1>
                     <div class="f-title-rule"></div>

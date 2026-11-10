@@ -1,7 +1,7 @@
 //! Right-side review inspector: patient, visit, prescriber, validation.
 
 use addict_order_models::{
-    ValidationSeverity, format_thai_date, format_thai_date_slash, format_time_hm,
+    ValidationIssue, ValidationSeverity, format_thai_date, format_thai_date_slash, format_time_hm,
 };
 use leptos::prelude::*;
 
@@ -13,6 +13,7 @@ pub fn Inspector(state: AppState) -> impl IntoView {
     let patient_state = state.clone();
     let visit_state = state.clone();
     let prescriber_state = state.clone();
+    let sig_state = state.clone();
     let check_state = state.clone();
     let confirm_state = state.clone();
 
@@ -128,19 +129,80 @@ pub fn Inspector(state: AppState) -> impl IntoView {
 
             <section class="inspector-card">
                 <header class="inspector-card__head">
+                    <h2>"ขนาดการใช้"</h2>
+                    <span class="inspector-card__meta">
+                        {move || format!("{} รายการ", sig_state.lines.get().len())}
+                    </span>
+                </header>
+                <Show
+                    when=move || !sig_state.lines.get().is_empty()
+                    fallback=move || view! { <p class="muted">"ยังไม่มีรายการยา"</p> }
+                >
+                    <>
+                        <div class="sig-editor">
+                            <For
+                                each=move || sig_state.lines.get()
+                                key=|line| line.line_id.clone()
+                                children=move |line| {
+                                    let line_state = sig_state.clone();
+                                    let line_id = line.line_id.clone();
+                                    let drug = if line.trade_name.trim().is_empty() {
+                                        line.generic_name.clone()
+                                    } else {
+                                        format!(
+                                            "{} · {}",
+                                            line.generic_name,
+                                            line.trade_name,
+                                        )
+                                    };
+                                    view! {
+                                        <label class="sig-editor__row">
+                                            <span class="sig-editor__drug">{drug}</span>
+                                            <textarea
+                                                class="sig-editor__input"
+                                                rows="2"
+                                                prop:value=line.sig.clone()
+                                                on:input=move |ev| {
+                                                    line_state
+                                                        .set_line_sig(
+                                                            &line_id,
+                                                            event_target_value(&ev),
+                                                        )
+                                                }
+                                            ></textarea>
+                                        </label>
+                                    }
+                                }
+                            />
+                        </div>
+                        <p class="sig-editor__hint">
+                            "แก้ข้อความให้สั้นและตรงกับวิธีใช้จริงก่อนพิมพ์"
+                        </p>
+                    </>
+                </Show>
+            </section>
+
+            <section class="inspector-card">
+                <header class="inspector-card__head">
                     <h2>"ตรวจสอบ"</h2>
                     <IconCheck />
                 </header>
                 {move || {
-                    let report = check_state.validation();
-                    if report.issues.is_empty() {
+                    let mut issues = check_state.validation().issues;
+                    if check_state.form_overflow.get() {
+                        issues.push(ValidationIssue::error(
+                            "form.overflow",
+                            "เนื้อหาเกิน 1 หน้า A4 กรุณาย่อขนาดการใช้หรือรายการยา",
+                        ));
+                    }
+                    if issues.is_empty() {
                         view! {
                             <p class="check-ok"><IconCheck /> "ข้อมูลครบถ้วน"</p>
                         }.into_any()
                     } else {
                         view! {
                             <ul class="check-list">
-                                {report.issues.into_iter().map(|issue| {
+                                {issues.into_iter().map(|issue| {
                                     let class = match issue.severity {
                                         ValidationSeverity::Error => "check-item check-item--error",
                                         ValidationSeverity::Warning => "check-item check-item--warn",

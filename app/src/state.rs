@@ -111,6 +111,8 @@ pub struct AppState {
     pub confirm_open: RwSignal<bool>,
     pub confirmed: RwSignal<Option<ConfirmedPrescription>>,
     pub printed_at: RwSignal<Option<NaiveDateTime>>,
+    /// Set by the document sheet when its rendered height exceeds one A4 page.
+    pub form_overflow: RwSignal<bool>,
 
     pub banner: RwSignal<Option<Banner>>,
 }
@@ -150,6 +152,7 @@ impl AppState {
             confirm_open: RwSignal::new(false),
             confirmed: RwSignal::new(None),
             printed_at: RwSignal::new(None),
+            form_overflow: RwSignal::new(false),
             banner: RwSignal::new(None),
         }
     }
@@ -183,6 +186,7 @@ impl AppState {
         self.prescriber_user_set.set(false);
         self.confirmed.set(None);
         self.printed_at.set(None);
+        self.form_overflow.set(false);
     }
 
     pub fn select_patient(&self, patient: PatientDetail) {
@@ -195,6 +199,7 @@ impl AppState {
         self.prescriber_user_set.set(false);
         self.confirmed.set(None);
         self.printed_at.set(None);
+        self.form_overflow.set(false);
     }
 
     pub fn select_visit(&self, visit: VisitSummary) {
@@ -214,6 +219,7 @@ impl AppState {
         self.order_count.set(0);
         self.confirmed.set(None);
         self.printed_at.set(None);
+        self.form_overflow.set(false);
     }
 
     pub fn apply_orders(
@@ -232,6 +238,19 @@ impl AppState {
         {
             self.prescriber.set(prescriber);
         }
+        self.confirmed.set(None);
+        self.printed_at.set(None);
+    }
+
+    /// Replace the printed directions for one line without dropping the
+    /// operator's other edits or the original HOSxP line identity.
+    pub fn set_line_sig(&self, line_id: &str, sig: String) {
+        let mut lines = self.lines.get();
+        let Some(line) = lines.iter_mut().find(|line| line.line_id == line_id) else {
+            return;
+        };
+        line.sig = sig;
+        self.lines.set(lines);
         self.confirmed.set(None);
         self.printed_at.set(None);
     }

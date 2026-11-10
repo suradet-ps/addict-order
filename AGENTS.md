@@ -235,6 +235,9 @@ written until the relevant section is verified.
   fallback is needed.
 - Keep lines with different sigs separate. Merge only identical
   `(icode, sig, doctor)` groups and sum the quantity.
+- Assemble the sig from every non-empty `drugusage.name1`, `name2`, `name3`,
+  then `sp_use.name1`, `name2`, `name3`, joined with spaces. Never select only
+  the last non-empty name; that drops the beginning of the directions.
 - Do not filter by `dep_code`. The prescription can be ordered from any
   department.
 - `qty` is int(11). Do not support decimal quantities in v1.
@@ -329,6 +332,7 @@ Every SQL constant must have a guard test asserting that it is read-only.
    - prescription date
    - legal category checkboxes
    - up to five drug rows
+   - each drug row's sig, which the operator may shorten or correct
 7. The operator confirms the snapshot.
 8. The print button prints the confirmed snapshot with `window.print()`.
 9. Any edit after confirmation clears the snapshot and disables printing.
@@ -348,6 +352,7 @@ Required:
 - generic name, strength, sig, quantity greater than zero, and print unit for
   every line
 - a legal category for every line
+- a one-page printed fit: the rendered sheet must not exceed one A4 page
 
 Warnings that do not block printing:
 
@@ -369,6 +374,9 @@ complete before the confirmation dialog opens.
 - The printed form is the same DOM and CSS as the preview.
 - The print stylesheet hides all application chrome and prints A4 portrait.
 - The app never prints a signature.
+- The app blocks confirmation and printing when the rendered sheet exceeds one
+  A4 page. The operator shortens the line sig in the inspector; the app never
+  clips or silently truncates directions.
 
 ## 9. Print standard
 
@@ -388,6 +396,8 @@ Print rules:
 - The signature line stays blank for the prescriber.
 - The form code "แบบ ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒" stays in the top-left corner.
 - The bottom legal box is part of the official form and must not be removed.
+- Clean the sig of dot leaders and line breaks before printing. Do not clip or
+  truncate directions; block printing until the sig fits the one-page form.
 
 If a prescription has more than five lines, v1 blocks printing and asks the
 operator to split it into separate forms. A continuation policy must be

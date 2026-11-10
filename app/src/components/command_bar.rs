@@ -426,6 +426,12 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
                                     }
                                     None => ("ok", "ยืนยันแล้ว · พร้อมพิมพ์".to_string()),
                                 }
+                            } else if state.form_overflow.get() {
+                                (
+                                    "error",
+                                    "เนื้อหาเกิน 1 หน้า A4 · ย่อขนาดการใช้ก่อนยืนยัน"
+                                        .to_string(),
+                                )
                             } else if state.selected_visit.get().is_none() {
                                 ("idle", "เลือกผู้ป่วยและ visit เพื่อเริ่ม".to_string())
                             } else if state.lines.get().is_empty() {
@@ -474,7 +480,7 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
                         class="button-accent"
                         type="button"
                         on:click=move |_| actions::open_confirm(state.clone())
-                        disabled=move || !state.can_confirm()
+                        disabled=move || !state.can_confirm() || state.form_overflow.get()
                     >
                         <IconCheck />
                         "ยืนยันข้อมูล"
@@ -483,7 +489,9 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
                         class="button-primary"
                         type="button"
                         on:click=move |_| actions::do_print(state.clone())
-                        disabled=move || state.confirmed.get().is_none()
+                        disabled=move || {
+                            state.confirmed.get().is_none() || state.form_overflow.get()
+                        }
                     >
                         <IconPrint />
                         "พิมพ์ใบสั่งจ่าย"

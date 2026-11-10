@@ -120,6 +120,12 @@ pub fn do_fetch_orders(state: AppState) {
 }
 
 pub fn open_confirm(state: AppState) {
+    if state.form_overflow.get_untracked() {
+        state.banner.set(Some(Banner::error(
+            "เนื้อหาเกิน 1 หน้า A4 กรุณาย่อขนาดการใช้หรือรายการยาก่อนยืนยัน",
+        )));
+        return;
+    }
     if !state.can_confirm() {
         state.banner.set(Some(Banner::error(
             "ยังมีข้อมูลที่ไม่ครบหรือเกิน 5 รายการ กรุณาตรวจสอบรายการแจ้งเตือน",
@@ -130,6 +136,12 @@ pub fn open_confirm(state: AppState) {
 }
 
 pub fn do_print(state: AppState) {
+    if state.form_overflow.get_untracked() {
+        state.banner.set(Some(Banner::error(
+            "เนื้อหาเกิน 1 หน้า A4 กรุณาย่อขนาดการใช้หรือรายการยาก่อนพิมพ์",
+        )));
+        return;
+    }
     if state.confirmed.get_untracked().is_none() {
         state.banner.set(Some(Banner::error("กรุณายืนยันข้อมูลก่อนพิมพ์")));
         return;
