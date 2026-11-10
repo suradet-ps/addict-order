@@ -1451,6 +1451,7 @@ button:disabled {
 
 .settings-actions--start {
   justify-content: flex-start;
+  margin-bottom: 16px;
 }
 
 .settings-hint {
