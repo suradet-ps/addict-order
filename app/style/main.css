@@ -1408,16 +1408,6 @@ button:disabled {
   line-height: 1.4;
 }
 
-.inspector-card--tiny {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-family: var(--font-thai);
-  font-size: 10px;
-  line-height: 1.4;
-}
-
 /* Modals */
 
 .modal-backdrop {

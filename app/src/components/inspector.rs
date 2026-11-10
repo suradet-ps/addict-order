@@ -5,7 +5,7 @@ use addict_order_models::{
 };
 use leptos::prelude::*;
 
-use crate::components::icons::{IconCheck, IconUser, IconWarning};
+use crate::components::icons::{IconCheck, IconWarning};
 use crate::state::AppState;
 
 /// Review sidebar: patient, visit, prescriber, sig editing, and validation.
@@ -259,10 +259,6 @@ pub fn Inspector(state: AppState) -> impl IntoView {
                 </p>
             </section>
 
-            <section class="inspector-card inspector-card--tiny">
-                <IconUser />
-                <span>"ข้อมูลผู้ป่วยใช้เพื่อสร้างเอกสารเท่านั้น ไม่บันทึกลงดิสก์"</span>
-            </section>
         </aside>
     }
 }
