@@ -47,6 +47,8 @@ pub fn build_lines(
     Ok(grouped.into_values().collect())
 }
 
+/// Maps one HOSxP order line to the form, using catalog metadata as the
+/// primary source and cleaning the sig before it is printed.
 fn line_from_order(
     order: &OrderLine,
     config: &NarcoticDrugConfig,
@@ -57,7 +59,9 @@ fn line_from_order(
     let generic_name = first_non_empty(&config.generic_name, &order.generic_name);
     let trade_name = first_non_empty(&config.trade_name, &order.trade_name);
     let strength_text = first_non_empty(&config.strength_text, &order.strength);
-    let sig = first_non_empty(&order.sig_text, &config.default_sig);
+    let order_sig = normalize_sig_text(&order.sig_text);
+    let default_sig = normalize_sig_text(&config.default_sig);
+    let sig = first_non_empty(&order_sig, &default_sig);
     let line_id = if order.hos_guid.trim().is_empty() {
         format!(
             "{}:{}:{}",
@@ -96,6 +100,49 @@ fn first_non_empty(primary: &str, fallback: &str) -> String {
     } else {
         fallback.trim().to_string()
     }
+}
+
+/// HOSxP lookup text is sometimes a label template rather than a clean sig:
+/// it can contain line breaks and runs of dots used as writing guides. Collapse
+/// whitespace and remove dots that are not decimal points, so the printed
+/// "ขนาดการใช้" cell stays readable and cannot be widened by a dot leader.
+fn normalize_sig_text(raw: &str) -> String {
+    let chars: Vec<char> = raw.chars().collect();
+    let mut out = String::with_capacity(raw.len());
+    let mut previous_was_space = false;
+
+    for (index, ch) in chars.iter().copied().enumerate() {
+        if ch == '.' || ch == '…' {
+            let previous_is_digit = index > 0 && chars[index - 1].is_ascii_digit();
+            let next_is_digit = chars
+                .get(index + 1)
+                .is_some_and(|next| next.is_ascii_digit());
+            if ch == '…' || !(previous_is_digit && next_is_digit) {
+                let is_leader =
+                    |candidate: Option<&char>| candidate.is_some_and(|c| *c == '.' || *c == '…');
+                let in_run = (index > 0 && is_leader(chars.get(index - 1)))
+                    || is_leader(chars.get(index + 1));
+                // A leader run often replaces the space between two words.
+                // Keep one separator so removing it cannot merge the words.
+                if (ch == '…' || in_run) && !out.is_empty() && !previous_was_space {
+                    out.push(' ');
+                    previous_was_space = true;
+                }
+                continue;
+            }
+        }
+        if ch.is_whitespace() {
+            if !out.is_empty() && !previous_was_space {
+                out.push(' ');
+                previous_was_space = true;
+            }
+            continue;
+        }
+        out.push(ch);
+        previous_was_space = false;
+    }
+
+    out.trim_end().to_string()
 }
 
 /// Derives the two legal-category checkboxes from the lines.
@@ -209,5 +256,43 @@ mod tests {
         let flags = CategoryFlags::from_lines(&lines);
         assert!(flags.narcotic_2);
         assert!(!flags.psychotropic_2);
+    }
+
+    #[test]
+    fn normalizes_sig_label_template() {
+        let raw = "ใช้ตามแพทย์สั่ง\n\
+                   ................................\n\
+                   ................................\n\
+                   ใช้ตามแพทย์สั่ง 3\n\
+                   mg iv at 19.40น.\n\
+                   ................................";
+        assert_eq!(
+            normalize_sig_text(raw),
+            "ใช้ตามแพทย์สั่ง ใช้ตามแพทย์สั่ง 3 mg iv at 19.40น"
+        );
+    }
+
+    #[test]
+    fn keeps_decimal_point_in_sig() {
+        assert_eq!(
+            normalize_sig_text("รับประทานครั้งละ 0.5 mg"),
+            "รับประทานครั้งละ 0.5 mg"
+        );
+    }
+
+    #[test]
+    fn dot_leader_keeps_word_boundary() {
+        assert_eq!(normalize_sig_text("ครั้งละ.....เม็ด"), "ครั้งละ เม็ด");
+        assert_eq!(normalize_sig_text("p.o."), "po");
+    }
+
+    #[test]
+    fn dot_only_sig_falls_back_to_catalog_default() {
+        let lines = build_lines(
+            &[order("g1", 10, "................................", None)],
+            &catalog(),
+        )
+        .expect("mapping succeeds");
+        assert_eq!(lines[0].sig, "1 tab twice daily");
     }
 }

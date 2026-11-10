@@ -302,13 +302,28 @@ The form asks for the quantity and a unit such as Amp, Vial, Tab, Cap, or Patch.
 ### 4.5 Directions for use
 
 The order may carry a `drugusage` code and an `sp_use` code. The connector joins
-the lookup tables and returns the available text.
+the lookup tables and assembles the sig from **every non-empty name part**:
 
-Preferred text order must be verified against real data. A safe default is:
+1. `drugusage.name1`, `name2`, `name3` in that order.
+2. `sp_use.name1`, `name2`, `name3` in that order.
+3. Join the non-empty parts with a single space.
+4. Fall back to the catalog default sig if the assembled text is empty.
+5. Block printing if both are empty.
 
-1. The longest non-empty text from the sig lookup.
-2. The catalog default sig.
-3. Block printing if both are empty.
+Do not select only the last non-empty `name3`. On Sra Bos, `name3` is often the
+tail of the directions; selecting it alone drops the beginning of the sig. This
+matches the med-recon sig assembly behavior.
+
+Normalize the assembled text before printing:
+
+- collapse line breaks and repeated whitespace to one space;
+- remove dot leaders and stray periods, but keep decimal points;
+- trim the result;
+- fall back to the catalog default sig if the cleaned text is empty.
+
+The operator can shorten or correct each line's sig in the inspector. If the
+rendered sheet exceeds one A4 page, block confirmation and printing and ask the
+operator to shorten the sig. Never clip or silently truncate directions.
 
 The app must not generate a sig from the dose and frequency unless the
 pharmacist explicitly approves that behavior.

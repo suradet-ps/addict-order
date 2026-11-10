@@ -7,6 +7,7 @@ use leptos::prelude::*;
 use crate::api::{self, ApiError, ApiErrorKind};
 use crate::state::{AppState, Banner, ConnectionHealth};
 
+/// Shows an API error and marks the connection down when appropriate.
 pub fn handle_error(state: &AppState, error: ApiError) {
     if matches!(
         error.kind,
@@ -17,6 +18,7 @@ pub fn handle_error(state: &AppState, error: ApiError) {
     state.banner.set(Some(Banner::error(error.message)));
 }
 
+/// Date range used for the default 30-day visit lookback.
 pub fn date_range_last_30_days() -> (String, String) {
     let today = Local::now().date_naive();
     let from = today - Duration::days(30);
@@ -26,6 +28,7 @@ pub fn date_range_last_30_days() -> (String, String) {
     )
 }
 
+/// Searches HOSxP for a patient by HN, CID, or name.
 pub fn do_search(state: AppState) {
     let term = state.search_term.get_untracked().trim().to_string();
     if term.is_empty() {
@@ -50,6 +53,7 @@ pub fn do_search(state: AppState) {
     });
 }
 
+/// Loads the patient detail and the recent visit list.
 pub fn select_patient(state: AppState, summary: PatientSummary) {
     let hn = summary.hn.clone();
     state.patient_busy.set(true);
@@ -79,10 +83,12 @@ pub fn select_patient(state: AppState, summary: PatientSummary) {
     });
 }
 
+/// Selects a visit and resets the order lines for that visit.
 pub fn select_visit(state: AppState, visit: VisitSummary) {
     state.select_visit(visit);
 }
 
+/// Fetches the configured narcotic lines for the selected visit.
 pub fn do_fetch_orders(state: AppState) {
     let Some(visit) = state.selected_visit.get_untracked() else {
         state
@@ -119,7 +125,14 @@ pub fn do_fetch_orders(state: AppState) {
     });
 }
 
+/// Opens the confirmation dialog only when the draft and sheet are print-ready.
 pub fn open_confirm(state: AppState) {
+    if state.form_overflow.get_untracked() {
+        state.banner.set(Some(Banner::error(
+            "เนื้อหาเกิน 1 หน้า A4 กรุณาย่อขนาดการใช้หรือรายการยาก่อนยืนยัน",
+        )));
+        return;
+    }
     if !state.can_confirm() {
         state.banner.set(Some(Banner::error(
             "ยังมีข้อมูลที่ไม่ครบหรือเกิน 5 รายการ กรุณาตรวจสอบรายการแจ้งเตือน",
@@ -129,7 +142,14 @@ pub fn open_confirm(state: AppState) {
     state.confirm_open.set(true);
 }
 
+/// Prints the confirmed snapshot after re-checking the form fit.
 pub fn do_print(state: AppState) {
+    if state.form_overflow.get_untracked() {
+        state.banner.set(Some(Banner::error(
+            "เนื้อหาเกิน 1 หน้า A4 กรุณาย่อขนาดการใช้หรือรายการยาก่อนพิมพ์",
+        )));
+        return;
+    }
     if state.confirmed.get_untracked().is_none() {
         state.banner.set(Some(Banner::error("กรุณายืนยันข้อมูลก่อนพิมพ์")));
         return;

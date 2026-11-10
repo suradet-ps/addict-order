@@ -7,6 +7,7 @@ use crate::api;
 use crate::components::icons::{IconCheck, IconSearch, IconSettings, IconX};
 use crate::state::{AppState, Banner, SettingsTab};
 
+/// Settings dialog for HOSxP connection, narcotic catalog, and hospital header.
 #[component]
 pub fn SettingsModal(state: AppState) -> impl IntoView {
     let connection_state = state.clone();
@@ -76,7 +77,6 @@ pub fn SettingsModal(state: AppState) -> impl IntoView {
                                 </div>
                             </div>
                             <footer class="modal__foot">
-                                <span class="modal__foot-note">"การตั้งค่าไม่มีข้อมูลผู้ป่วย และไม่มีรหัสผ่านฐานข้อมูลในไฟล์ตั้งค่า"</span>
                                 <button class="button-secondary" type="button" on:click=close_footer>"ปิด"</button>
                             </footer>
                         </section>
@@ -87,6 +87,7 @@ pub fn SettingsModal(state: AppState) -> impl IntoView {
     }
 }
 
+/// HOSxP connection fields. Credentials are encrypted before they are saved.
 #[component]
 fn ConnectionTab(state: AppState) -> impl IntoView {
     let host = RwSignal::new(String::new());
@@ -163,7 +164,6 @@ fn ConnectionTab(state: AppState) -> impl IntoView {
         <section class="settings-panel">
             <header class="settings-panel__head">
                 <h3>"เชื่อมต่อ HOSxP"</h3>
-                <p>"ใช้บัญชีอ่านอย่างเดียว (SELECT) และฐานข้อมูล hos"</p>
             </header>
             <div class="form-grid">
                 <label class="field form-grid__wide">
@@ -179,7 +179,7 @@ fn ConnectionTab(state: AppState) -> impl IntoView {
                     <input class="text-input mono" prop:value=move || database.get() on:input=move |ev| database.set(event_target_value(&ev)) />
                 </label>
                 <label class="field">
-                    <span class="field__label">"User (SELECT only)"</span>
+                    <span class="field__label">"User"</span>
                     <input class="text-input mono" prop:value=move || user.get() on:input=move |ev| user.set(event_target_value(&ev)) />
                 </label>
                 <label class="field">
@@ -196,13 +196,11 @@ fn ConnectionTab(state: AppState) -> impl IntoView {
                     "บันทึกการเชื่อมต่อ"
                 </button>
             </div>
-            <p class="settings-hint">
-                "รหัสผ่านถูกเข้ารหัสด้วย encryptman และ master key อยู่ใน OS keychain ไม่ถูกเก็บในไฟล์ settings"
-            </p>
         </section>
     }
 }
 
+/// Narcotic catalog editor: search drugs, add icodes, and set print metadata.
 #[component]
 fn CatalogTab(state: AppState) -> impl IntoView {
     let catalog = RwSignal::new(Catalog::default());
@@ -351,9 +349,6 @@ fn CatalogTab(state: AppState) -> impl IntoView {
                     "บันทึกบัญชียา"
                 </button>
             </div>
-            <p class="settings-hint">
-                "ระบบจะไม่ยอมบันทึกหากรายการใดขาดชื่อยา ความแรง หน่วยพิมพ์ หรือประเภททางกฎหมาย"
-            </p>
         </section>
     }
 }
@@ -468,6 +463,7 @@ fn CatalogRow(
     }
 }
 
+/// Printed hospital header. The values are pharmacist-verified settings.
 #[component]
 fn HospitalTab(state: AppState) -> impl IntoView {
     let hospital = RwSignal::new(state.hospital.get_untracked());

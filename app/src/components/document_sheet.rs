@@ -154,8 +154,27 @@ fn FormLine(label: String, value: String) -> impl IntoView {
     }
 }
 
+/// Official A4 prescription sheet. The screen preview and print output share
+/// this DOM; the height effect keeps confirmation and printing inside one page.
 #[component]
 pub fn DocumentSheet(state: AppState) -> impl IntoView {
+    let sheet_ref = NodeRef::<leptos::html::Article>::new();
+    let measure_state = state.clone();
+    Effect::new(move |_| {
+        // Track every value that can change the printed height.
+        let _ = measure_state.selected_patient.get();
+        let _ = measure_state.selected_visit.get();
+        let _ = measure_state.prescriber.get();
+        let _ = measure_state.hospital.get();
+        let _ = measure_state.lines.get();
+
+        if let Some(sheet) = sheet_ref.get() {
+            let height = f64::from(sheet.offset_height());
+            // A4 is 297 mm = 1122.5 px at 96 dpi. Allow the 2 px screen border.
+            measure_state.form_overflow.set(height > 1128.0);
+        }
+    });
+
     view! {
         {move || {
             let data = sheet_data(&state);
@@ -186,7 +205,7 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
             };
 
             view! {
-                <article class="sheet">
+                <article class="sheet" node_ref=sheet_ref>
                     <p class="f-code">"แบบ ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒"</p>
                     <h1 class="f-title">"ใบสั่งจ่ายยาเสพติดให้โทษในประเภท ๒ หรือวัตถุออกฤทธิ์ในประเภท ๒"</h1>
                     <div class="f-title-rule"></div>
@@ -239,9 +258,51 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
 
                     <div class="f-category">
                         <span class="f-category__label">"ขอสั่งจ่าย"</span>
-                        <span class=narcotic_class></span>
+                        <span class=narcotic_class>
+                            {data
+                                .flags
+                                .narcotic_2
+                                .then(|| {
+                                    view! {
+                                        <svg
+                                            class="f-check"
+                                            viewBox="0 0 10 10"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M2 5.4 L4.1 7.5 L8 2.6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="square"
+                                            />
+                                        </svg>
+                                    }
+                                })}
+                        </span>
                         <span>"ยาเสพติดให้โทษในประเภท ๒"</span>
-                        <span class=psychotropic_class></span>
+                        <span class=psychotropic_class>
+                            {data
+                                .flags
+                                .psychotropic_2
+                                .then(|| {
+                                    view! {
+                                        <svg
+                                            class="f-check"
+                                            viewBox="0 0 10 10"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M2 5.4 L4.1 7.5 L8 2.6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="square"
+                                            />
+                                        </svg>
+                                    }
+                                })}
+                        </span>
                         <span>"วัตถุออกฤทธิ์ในประเภท ๒"</span>
                         <span>"ดังรายการดังต่อไปนี้"</span>
                     </div>

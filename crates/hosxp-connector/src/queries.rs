@@ -152,14 +152,14 @@ SELECT o.vn, o.hn, o.icode,
        COALESCE(d.trade_name, '') AS trade_name,
        COALESCE(d.strength, '') AS strength,
        COALESCE(d.units, '') AS source_units,
-       COALESCE(
-           NULLIF(du.name3, ''),
-           NULLIF(du.name2, ''),
-           NULLIF(du.name1, ''),
-           NULLIF(su.name3, ''),
-           NULLIF(su.name2, ''),
-           NULLIF(su.name1, ''),
-           ''
+       CONCAT_WS(
+           ' ',
+           NULLIF(TRIM(du.name1), ''),
+           NULLIF(TRIM(du.name2), ''),
+           NULLIF(TRIM(du.name3), ''),
+           NULLIF(TRIM(su.name1), ''),
+           NULLIF(TRIM(su.name2), ''),
+           NULLIF(TRIM(su.name3), '')
        ) AS sig_text,
        COALESCE(o.drugusage, '') AS drugusage_code,
        COALESCE(o.sp_use, '') AS sp_use_code,
@@ -223,6 +223,28 @@ mod tests {
         for count in [1_usize, 2, 5, 20] {
             let sql = narcotic_orders_sql(count);
             assert_eq!(sql.matches('?').count(), count + 1);
+        }
+    }
+
+    #[test]
+    fn order_query_joins_every_sig_name_part() {
+        let sql = narcotic_orders_sql(1);
+        assert!(sql.contains("CONCAT_WS("), "sig parts must be concatenated");
+
+        let columns = [
+            "du.name1", "du.name2", "du.name3", "su.name1", "su.name2", "su.name3",
+        ];
+        let mut previous = 0;
+        for column in columns {
+            let needle = format!("NULLIF(TRIM({column}), '')");
+            let position = sql
+                .find(&needle)
+                .unwrap_or_else(|| panic!("missing {column}"));
+            assert!(
+                position >= previous,
+                "sig name parts must stay in name1..name3 order"
+            );
+            previous = position;
         }
     }
 

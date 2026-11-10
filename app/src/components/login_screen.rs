@@ -6,6 +6,7 @@ use crate::api::{self, ApiErrorKind};
 use crate::components::icons::{BrandArt, BrandMark, IconArrowRight, IconLock, IconSettings};
 use crate::state::{AppState, Banner, ConnectionHealth, SettingsTab};
 
+/// Login gate for the HOSxP officer account.
 #[component]
 pub fn LoginScreen(state: AppState) -> impl IntoView {
     let username = RwSignal::new(String::new());
@@ -89,12 +90,8 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
                 </div>
                 <div class="login__stage">
                     <h1 class="login__headline">"ใบสั่งจ่ายที่ตรวจสอบได้"</h1>
-                    <p class="login__lede">
-                        "ค้นผู้ป่วยจาก HOSxP ตรวจรายการยา และพิมพ์ใบสั่งจ่ายตามแบบราชการ"
-                    </p>
                     <BrandArt />
                 </div>
-                <p class="login__footnote">"HOSxP read-only · เอกสารมาตรฐาน กองควบคุมวัตถุเสพติด"</p>
             </aside>
 
             <main class="login__main">
@@ -109,7 +106,6 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
                     <div class="login__seal"></div>
                     <header class="login__card-head">
                         <h2 class="login__card-title">"เข้าสู่ระบบ"</h2>
-                        <p class="login__card-sub">"ใช้บัญชี officer ของ HOSxP"</p>
                     </header>
 
                     {move || {
