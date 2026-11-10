@@ -65,7 +65,7 @@ fn App() -> impl IntoView {
                                 if stage.catalog_is_empty() {
                                     view! { <CatalogEmpty state=stage.clone() /> }.into_any()
                                 } else if stage.selected_patient.get().is_none() {
-                                    view! { <EmptyDesk state=stage.clone() /> }.into_any()
+                                    view! { <EmptyDesk /> }.into_any()
                                 } else {
                                     view! {
                                         <DocumentSheet state=stage.clone() />

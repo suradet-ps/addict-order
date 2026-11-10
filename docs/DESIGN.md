@@ -227,9 +227,8 @@ Details:
 │ TOP BAR  [mark] Addict Order · ระบบใบสั่งจ่าย · ● │ user · logout    │
 ├──────────────────────────────────────────────────────────────────────┤
 │ COMMAND BAR                                                          │
-│ [ค้นหา HN / CID / ชื่อ-สกุล........................] [HN][CID][ชื่อ]  │
-│ [patient chip] [visit selector] [date] [prescriber] [ดึงรายการ]       │
-│ [เพิ่มรายการ] [ยืนยันข้อมูล] [พิมพ์ใบสั่งจ่าย]                        │
+│ [1 ผู้ป่วย: search.......] [2 Visit: select + date] [3 ผู้ออกใบสั่ง] │
+│ [4 ตรวจสอบและพิมพ์ · status........] [ดึงรายการ] [ยืนยัน] [พิมพ์]    │
 ├──────────────────────────────────────────────────────────────────────┤
 │ STAGE (vault desk)                          │ INSPECTOR               │
 │                                             │ Patient                 │
@@ -248,31 +247,48 @@ object.
 
 ### 6.4 Command bar
 
-The command bar is the only control surface above the document.
+The command bar is the only control surface above the document. It is a
+numbered workflow rail, not a loose stack of fields.
 
-Row 1: search.
+Row 1: three compact step cards.
 
-- A large search input, 48 px high.
-- A segmented type control: `HN`, `CID`, `ชื่อ`.
-- A search button with a blue magnifier.
-- A result count.
-- When a patient is selected, the search collapses to a patient chip and a
-  "เปลี่ยนผู้ป่วย" action.
+1. **ผู้ป่วย**
+   - The search input is capped by the card width, never the window width.
+   - Placeholder: `HN / CID / ชื่อ-สกุล`.
+   - Hint below the input: `HN 7 หลัก · CID 13 หลัก · ชื่อหรือนามสกุล`.
+   - Results open in an anchored dropdown below the card. They do not reflow
+     the stage.
+   - When a patient is selected, the search collapses to a patient card with
+     HN and name, a masked CID in the card footer, and a "เปลี่ยนผู้ป่วย"
+     action in the step header.
+2. **Visit**
+   - The select fills the card.
+   - The prescription date is a read-only footer inside the card, derived from
+     the selected visit.
+   - The step header shows the number of visits in the current window.
+3. **ผู้ออกใบสั่งจ่าย**
+   - One picker button shows the selected name.
+   - The licence sits in the card footer, aligned with the CID and visit-date
+     footers on the other cards.
+   - A missing licence is shown as an amber footer warning.
+   - The picker is disabled until a patient is selected.
+   - A doctor chosen by the operator is pinned for the current patient.
+     Fetching orders or changing the visit must not replace that choice. The
+     step header shows `เลือกเอง` while the choice is pinned.
 
-Row 2: context.
+Row 2: document actions.
 
-- Patient chip: HN, name, masked CID.
-- Visit selector: date, time, department, doctor.
-- Prescription date: read-only, derived from the visit.
-- Prescriber chip: name and licence.
-- "ดึงรายการยา" button.
-
-Row 3: document actions.
-
-- "เพิ่มรายการ" is disabled in v1.
+- A full-width `4 · ตรวจสอบและพิมพ์` card aligns with the three step cards.
+- A live status line shows the next action, row count (`n / 5`), and print
+  state.
+- "ดึงรายการยา" is secondary.
 - "ยืนยันข้อมูล" is yellow with black text.
 - "พิมพ์ใบสั่งจ่าย" is black with yellow text, disabled until confirmed.
-- A status text shows the last pull time and row count.
+- The buttons keep workflow order from left to right: fetch, confirm, print.
+
+Step numbers turn into green check marks when the step is complete. Yellow is
+reserved for the primary confirm action; it is not used as a second progress
+color.
 
 ### 6.5 Stage
 
@@ -299,6 +315,8 @@ The inspector is a stack of square cards:
 3. **Prescriber**
    - Name, licence number, source badge (`จาก HOSxP` or `กรอกเอง`).
    - "เลือกแพทย์" action.
+   - When the operator has pinned a prescriber, show that the choice will not
+     be replaced by the order doctor when drug lines are fetched.
 4. **Checks**
    - Required fields complete.
    - Address complete.
@@ -350,31 +368,33 @@ All buttons:
 
 ### 7.3 Search
 
-- Input 48 px high, 2 px black border, radius 2 px.
-- Left blue magnifier icon.
-- Right search button, blue with white text.
-- Type chips: square toggles, 32 px high, black border; active is yellow with
-  black text.
-- Results panel: white, 2 px black border, `shadow-md`, max height 360 px.
-- Result row: HN in mono, name, masked CID, birth date.
-- Hover: `--yellow-100`.
-- Selected: `--blue-100` with a 4 px yellow left bar.
-- Empty state: "ไม่พบผู้ป่วย" with a hint to check the search type.
+- The search lives inside step 1 of the command rail and is capped at the step
+  width. It must not stretch across the window.
+- Input 40 px high, 2 px black border, radius 2 px, blue magnifier on the left.
+- Right search button, compact blue with white text.
+- Hint below the input: `HN 7 หลัก · CID 13 หลัก · ชื่อหรือนามสกุล`.
+- Results panel: anchored below the step card, white, 2 px black border,
+  `shadow-md`, max height 320 px.
+- Result row: HN chip in mono, name, masked CID, right chevron.
+- Hover or keyboard focus: `--yellow-100`.
+- Empty state: a banner, not an inline results row.
 
-### 7.4 Patient chip
+### 7.4 Selected patient card
 
-- Blue-700 background, white text, 2 px black border, radius 2 px.
-- HN in mono, name in Thai.
-- CID masked as `1-XXXX-XXXXX-XX-1`.
-- A small "เปลี่ยน" ghost action.
+- Blue-50 background, 2 px blue-700 border with a 6 px blue left accent.
+- HN chip in mono and name in Thai on one line.
+- Masked CID in the card footer so all three step cards share a bottom rule.
+- A "เปลี่ยนผู้ป่วย" text action sits in the step header.
+- Replacing the patient clears the visit, drug lines, prescriber, and print
+  snapshot.
 
 ### 7.5 Visit selector
 
-- A bordered list or popover.
-- Each row: date, time, department, doctor.
-- Selected: yellow-100 background, 2 px black border.
-- The prescription date is shown separately and is read-only.
-- If no visits: "ไม่พบ visit ในช่วง 30 วัน" with a date range control.
+- A native select that fills the step card. Each option shows date, time, and
+  department.
+- The prescription date is a read-only footer inside the same card.
+- If no visits: the footer shows "ไม่พบ visit ใน 30 วัน" in amber.
+- The step header shows the number of visits in the 30-day window.
 
 ### 7.6 Drug table
 

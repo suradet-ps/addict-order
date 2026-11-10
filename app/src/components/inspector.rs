@@ -110,6 +110,18 @@ pub fn Inspector(state: AppState) -> impl IntoView {
                                 }
                             />
                         </label>
+                        {move || {
+                            input_state
+                                .prescriber_user_set
+                                .get()
+                                .then(|| {
+                                    view! {
+                                        <p class="inspector-prescriber__note">
+                                            "เลือกเองแล้ว ระบบจะไม่แทนที่ด้วยแพทย์จาก HOSxP เมื่อดึงรายการยา"
+                                        </p>
+                                    }
+                                })
+                        }}
                     }
                 }}
             </section>

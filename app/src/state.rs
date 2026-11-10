@@ -101,6 +101,9 @@ pub struct AppState {
     pub lines: RwSignal<Vec<PrescriptionLine>>,
     pub order_count: RwSignal<usize>,
     pub prescriber: RwSignal<Prescriber>,
+    /// True once the operator chooses a prescriber in the dialog or edits the
+    /// licence. HOSxP-derived prescribers must never replace that choice.
+    pub prescriber_user_set: RwSignal<bool>,
     pub hospital: RwSignal<HospitalProfile>,
 
     pub address_edit_open: RwSignal<bool>,
@@ -140,6 +143,7 @@ impl AppState {
             lines: RwSignal::new(Vec::new()),
             order_count: RwSignal::new(0),
             prescriber: RwSignal::new(Prescriber::default()),
+            prescriber_user_set: RwSignal::new(false),
             hospital: RwSignal::new(HospitalProfile::default()),
             address_edit_open: RwSignal::new(false),
             prescriber_edit_open: RwSignal::new(false),
@@ -176,6 +180,7 @@ impl AppState {
         self.lines.set(Vec::new());
         self.order_count.set(0);
         self.prescriber.set(Prescriber::default());
+        self.prescriber_user_set.set(false);
         self.confirmed.set(None);
         self.printed_at.set(None);
     }
@@ -187,17 +192,23 @@ impl AppState {
         self.lines.set(Vec::new());
         self.order_count.set(0);
         self.prescriber.set(Prescriber::default());
+        self.prescriber_user_set.set(false);
         self.confirmed.set(None);
         self.printed_at.set(None);
     }
 
     pub fn select_visit(&self, visit: VisitSummary) {
-        self.prescriber.set(Prescriber {
-            doctor_code: visit.doctor_code.clone(),
-            name: visit.doctor_name.clone(),
-            license_no: String::new(),
-            source: Some(PrescriberSource::Hosxp),
-        });
+        // A prescriber chosen by the operator wins over the visit doctor.
+        // Visit changes may update the drug lines, but must not silently
+        // replace a doctor the operator selected for this document.
+        if !self.prescriber_user_set.get_untracked() {
+            self.prescriber.set(Prescriber {
+                doctor_code: visit.doctor_code.clone(),
+                name: visit.doctor_name.clone(),
+                license_no: String::new(),
+                source: Some(PrescriberSource::Hosxp),
+            });
+        }
         self.selected_visit.set(Some(visit));
         self.lines.set(Vec::new());
         self.order_count.set(0);
@@ -213,7 +224,12 @@ impl AppState {
     ) {
         self.lines.set(lines);
         self.order_count.set(order_count);
-        if let Some(prescriber) = prescriber {
+        // The order doctor is only a default. Never overwrite a prescriber
+        // the operator selected explicitly, otherwise a pharmacist who is
+        // not the prescriber would be printed as the doctor.
+        if !self.prescriber_user_set.get_untracked()
+            && let Some(prescriber) = prescriber
+        {
             self.prescriber.set(prescriber);
         }
         self.confirmed.set(None);
@@ -221,6 +237,8 @@ impl AppState {
     }
 
     pub fn set_prescriber(&self, prescriber: Prescriber) {
+        self.prescriber_user_set
+            .set(!prescriber.name.trim().is_empty());
         self.prescriber.set(prescriber);
         self.confirmed.set(None);
     }
@@ -289,5 +307,83 @@ impl AppState {
 
     pub fn mark_printed(&self) {
         self.printed_at.set(Some(Local::now().naive_local()));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use addict_order_models::{Prescriber, PrescriberSource};
+    use chrono::NaiveDate;
+
+    fn visit(vn: &str, doctor_name: &str) -> VisitSummary {
+        VisitSummary {
+            vn: vn.to_string(),
+            visit_date: NaiveDate::from_ymd_opt(2026, 11, 10).expect("valid test date"),
+            visit_time: None,
+            department_code: String::new(),
+            department_name: String::new(),
+            doctor_code: Some(format!("code-{vn}")),
+            doctor_name: doctor_name.to_string(),
+        }
+    }
+
+    fn prescriber(name: &str, source: PrescriberSource) -> Prescriber {
+        Prescriber {
+            doctor_code: None,
+            name: name.to_string(),
+            license_no: format!("license-{name}"),
+            source: Some(source),
+        }
+    }
+
+    #[test]
+    fn operator_selected_prescriber_survives_order_refresh() {
+        let state = AppState::new();
+        state.select_visit(visit("V1", "นพ. จาก visit"));
+        state.set_prescriber(prescriber("นพ. ที่เลือกเอง", PrescriberSource::Hosxp));
+
+        state.apply_orders(
+            Vec::new(),
+            0,
+            Some(prescriber("นพ. จาก order", PrescriberSource::Hosxp)),
+        );
+
+        assert_eq!(state.prescriber.get_untracked().name, "นพ. ที่เลือกเอง");
+        assert!(state.prescriber_user_set.get_untracked());
+    }
+
+    #[test]
+    fn operator_selected_prescriber_survives_visit_change() {
+        let state = AppState::new();
+        state.select_visit(visit("V1", "นพ. จาก visit"));
+        state.set_prescriber(prescriber("นพ. ที่เลือกเอง", PrescriberSource::Manual));
+        state.select_visit(visit("V2", "นพ. อีกคน"));
+
+        assert_eq!(state.prescriber.get_untracked().name, "นพ. ที่เลือกเอง");
+    }
+
+    #[test]
+    fn order_prescriber_fills_when_operator_has_not_chosen() {
+        let state = AppState::new();
+        state.select_visit(visit("V1", "นพ. จาก visit"));
+        state.apply_orders(
+            Vec::new(),
+            0,
+            Some(prescriber("นพ. จาก order", PrescriberSource::Hosxp)),
+        );
+
+        assert_eq!(state.prescriber.get_untracked().name, "นพ. จาก order");
+        assert!(!state.prescriber_user_set.get_untracked());
+    }
+
+    #[test]
+    fn empty_manual_name_does_not_lock_auto_fill() {
+        let state = AppState::new();
+        state.set_prescriber(Prescriber::default());
+        assert!(!state.prescriber_user_set.get_untracked());
+
+        state.select_visit(visit("V1", "นพ. จาก visit"));
+        assert_eq!(state.prescriber.get_untracked().name, "นพ. จาก visit");
     }
 }

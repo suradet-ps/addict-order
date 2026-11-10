@@ -247,6 +247,10 @@ written until the relevant section is verified.
 - Prefer `opitemrece.doctor`.
 - Fall back to `ovst.doctor`.
 - If both are empty, require the operator to select a doctor.
+- An operator-selected prescriber is authoritative. Once the operator chooses a
+  doctor in the prescriber dialog or edits the licence, a later order fetch or
+  visit change must not replace that prescriber. Auto-fill is only allowed
+  while the operator has not chosen one.
 - The logged-in officer is not automatically the prescriber. Use the officer's
   `doctor_code` only when the officer is a doctor and the order has no doctor,
   and show the result for confirmation.
