@@ -239,9 +239,51 @@ pub fn DocumentSheet(state: AppState) -> impl IntoView {
 
                     <div class="f-category">
                         <span class="f-category__label">"ขอสั่งจ่าย"</span>
-                        <span class=narcotic_class></span>
+                        <span class=narcotic_class>
+                            {data
+                                .flags
+                                .narcotic_2
+                                .then(|| {
+                                    view! {
+                                        <svg
+                                            class="f-check"
+                                            viewBox="0 0 10 10"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M2 5.4 L4.1 7.5 L8 2.6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="square"
+                                            />
+                                        </svg>
+                                    }
+                                })}
+                        </span>
                         <span>"ยาเสพติดให้โทษในประเภท ๒"</span>
-                        <span class=psychotropic_class></span>
+                        <span class=psychotropic_class>
+                            {data
+                                .flags
+                                .psychotropic_2
+                                .then(|| {
+                                    view! {
+                                        <svg
+                                            class="f-check"
+                                            viewBox="0 0 10 10"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M2 5.4 L4.1 7.5 L8 2.6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="square"
+                                            />
+                                        </svg>
+                                    }
+                                })}
+                        </span>
                         <span>"วัตถุออกฤทธิ์ในประเภท ๒"</span>
                         <span>"ดังรายการดังต่อไปนี้"</span>
                     </div>
