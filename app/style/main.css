@@ -272,11 +272,12 @@ button:disabled {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
 }
 
 .login__headline {
-  margin: 0 0 12px;
+  margin: 0 0 20px;
   max-width: 520px;
   font-family: var(--font-thai);
   font-size: 34px;
@@ -284,16 +285,8 @@ button:disabled {
   line-height: 1.15;
 }
 
-.login__lede {
-  margin: 0 0 20px;
-  max-width: 470px;
-  color: var(--blue-100);
-  font-family: var(--font-thai);
-  font-size: 16px;
-  line-height: 1.6;
-}
-
 .login__art {
+  align-self: center;
   width: min(360px, 70%);
   margin-top: 4px;
 }
@@ -302,17 +295,6 @@ button:disabled {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.login__footnote {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  color: var(--blue-100);
-  font-family: var(--font-thai);
-  font-size: 12px;
-  line-height: 1.4;
-  opacity: 0.8;
 }
 
 .login__main {
@@ -351,18 +333,11 @@ button:disabled {
 }
 
 .login__card-title {
-  margin: 0 0 4px;
+  margin: 0;
   font-family: var(--font-thai);
   font-size: 24px;
   font-weight: 700;
   line-height: 1.25;
-}
-
-.login__card-sub {
-  margin: 0;
-  color: var(--muted);
-  font-family: var(--font-thai);
-  font-size: 12px;
 }
 
 .login__notice {
@@ -1405,14 +1380,6 @@ button:disabled {
   background: var(--blue-50);
 }
 
-.modal__foot-note {
-  margin-right: auto;
-  color: var(--muted);
-  font-family: var(--font-thai);
-  font-size: 10px;
-  line-height: 1.4;
-}
-
 /* Settings */
 
 .settings-layout {
@@ -1454,6 +1421,10 @@ button:disabled {
   padding: 18px;
 }
 
+.settings-panel__head {
+  margin-bottom: 16px;
+}
+
 .settings-panel__head h3 {
   margin: 0 0 4px;
   font-family: var(--font-thai);
@@ -1463,7 +1434,7 @@ button:disabled {
 }
 
 .settings-panel__head p {
-  margin: 0 0 16px;
+  margin: 0;
   color: var(--muted);
   font-family: var(--font-thai);
   font-size: 11px;
