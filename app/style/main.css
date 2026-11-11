@@ -9,7 +9,7 @@
   --ink: #111111;
   --paper: #ffffff;
   --desk: #e8edf7;
-  --desk-grid: rgba(29, 78, 216, 0.06);
+  --desk-grid: rgba(29, 78, 216, 0.035);
   --text-secondary: #4b5563;
   --muted: #6b7280;
   --success: #15803d;
@@ -20,6 +20,7 @@
   --error-soft: #fee2e2;
   --line: #111111;
   --line-soft: #cbd5e1;
+  --line-control: #94a3b8;
   --focus: #facc15;
   --shadow-sm: 3px 3px 0 #111111;
   --shadow-md: 6px 6px 0 #111111;
@@ -115,15 +116,19 @@ button {
 }
 
 .button-secondary {
+  border-width: 1px;
+  border-color: var(--line-control);
   background: var(--paper);
   color: var(--ink);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .button-blue {
+  border-width: 1px;
+  border-color: var(--blue-700);
   background: var(--blue-700);
   color: #ffffff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .button-ghost {
@@ -154,17 +159,13 @@ button {
 }
 
 .button-primary:hover:not(:disabled):not(:active),
-.button-secondary:hover:not(:disabled):not(:active),
-.button-accent:hover:not(:disabled):not(:active),
-.button-blue:hover:not(:disabled):not(:active) {
+.button-accent:hover:not(:disabled):not(:active) {
   transform: translate(-1px, -1px);
   box-shadow: var(--shadow-md);
 }
 
 .button-primary:active:not(:disabled),
-.button-secondary:active:not(:disabled),
-.button-accent:active:not(:disabled),
-.button-blue:active:not(:disabled) {
+.button-accent:active:not(:disabled) {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--line);
 }
@@ -208,7 +209,7 @@ button:disabled {
 .select {
   width: 100%;
   height: 40px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-control);
   border-radius: 2px;
   background: var(--paper);
   color: var(--ink);
@@ -387,7 +388,7 @@ button:disabled {
   gap: 12px;
   margin: 12px 28px 0;
   padding: 10px 12px;
-  border: 2px solid var(--warn);
+  border: 1px solid var(--warn);
   background: var(--warn-soft);
   color: var(--warn);
   font-family: var(--font-thai);
@@ -419,7 +420,7 @@ button:disabled {
   gap: 8px;
   margin: 0;
   padding: 10px 12px;
-  border: 2px solid var(--error);
+  border: 1px solid var(--error);
   background: var(--error-soft);
   color: var(--error);
   font-family: var(--font-thai);
@@ -454,7 +455,7 @@ button:disabled {
   justify-content: space-between;
   gap: 16px;
   padding: 0 16px;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
   background: var(--paper);
 }
 
@@ -547,7 +548,7 @@ button:disabled {
   display: none;
   transform: translateX(-50%);
   white-space: nowrap;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
   box-shadow: var(--shadow-sm);
   color: var(--ink);
@@ -567,7 +568,7 @@ button:disabled {
   gap: 8px;
   max-width: 240px;
   padding: 5px 10px 5px 5px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--blue-50);
 }
 
@@ -610,7 +611,7 @@ button:disabled {
   flex-direction: column;
   gap: 10px;
   padding: 12px 16px;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
   background: var(--blue-50);
 }
 
@@ -623,9 +624,9 @@ button:disabled {
 .flow-step,
 .action-step {
   min-width: 0;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .flow-step {
@@ -769,7 +770,7 @@ button:disabled {
   gap: 8px;
   height: 44px;
   padding: 0 4px 0 12px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-control);
   background: var(--paper);
 }
 
@@ -799,11 +800,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-.search__submit:hover:not(:disabled):not(:active) {
-  transform: none;
-  box-shadow: var(--shadow-sm);
-}
-
 .flow-step > .search {
   flex: 0 0 auto;
   width: 100%;
@@ -828,7 +824,7 @@ button:disabled {
   z-index: 30;
   overflow: auto;
   max-height: 320px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
   box-shadow: var(--shadow-md);
   animation: dropdown-in 120ms ease-out;
@@ -919,7 +915,7 @@ button:disabled {
   grid-area: hn;
   justify-self: start;
   padding: 1px 5px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--blue-50);
   font-size: 11px;
   font-weight: 600;
@@ -966,15 +962,15 @@ button:disabled {
   gap: 8px;
   min-height: 40px;
   padding: 7px 10px;
-  border: 2px solid var(--blue-700);
-  border-left-width: 6px;
+  border: 1px solid var(--blue-700);
+  border-left-width: 4px;
   background: var(--blue-50);
 }
 
 .patient-pick__hn {
   flex: none;
   padding: 1px 5px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
   font-size: 11px;
   font-weight: 700;
@@ -999,7 +995,7 @@ button:disabled {
   width: 100%;
   min-height: 44px;
   padding: 6px 8px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--blue-50);
   color: var(--ink);
   text-align: left;
@@ -1167,9 +1163,9 @@ button:disabled {
   gap: 12px;
   width: min(520px, 100%);
   padding: 32px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   text-align: center;
 }
 
@@ -1203,9 +1199,9 @@ button:disabled {
 
 .inspector-card {
   padding: 12px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .inspector-card__head {
@@ -1267,7 +1263,7 @@ button:disabled {
   width: 100%;
   min-height: 48px;
   resize: vertical;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-control);
   border-radius: 2px;
   background: var(--paper);
   color: var(--ink);
@@ -1467,7 +1463,7 @@ button:disabled {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 18px;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
   background: var(--yellow-400);
 }
 
@@ -1491,7 +1487,7 @@ button:disabled {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-control);
   background: var(--paper);
   color: var(--ink);
   transition: background-color 150ms ease-out;
@@ -1519,7 +1515,7 @@ button:disabled {
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 18px;
-  border-top: 2px solid var(--line);
+  border-top: 1px solid var(--line-soft);
   background: var(--blue-50);
 }
 
@@ -1536,13 +1532,13 @@ button:disabled {
   flex-direction: column;
   gap: 4px;
   padding: 12px;
-  border-right: 2px solid var(--line);
+  border-right: 1px solid var(--line-soft);
   background: var(--blue-50);
 }
 
 .settings-nav__item {
   padding: 10px 12px;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-thai);
@@ -1557,9 +1553,9 @@ button:disabled {
 }
 
 .settings-nav__item--active {
-  border-color: var(--line);
+  border-color: var(--line-control);
   background: var(--paper);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   color: var(--ink);
 }
 
@@ -1628,7 +1624,7 @@ button:disabled {
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--blue-50);
 }
 
@@ -1710,9 +1706,9 @@ button:disabled {
 
 .catalog-row {
   padding: 10px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .catalog-row__identity {
@@ -1762,7 +1758,7 @@ button:disabled {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
-  border: 2px solid var(--line-soft);
+  border: 1px solid var(--line-soft);
   background: var(--paper);
   text-align: left;
   transition: background-color 120ms ease-out, border-color 120ms ease-out;
@@ -1784,16 +1780,24 @@ button:disabled {
 }
 
 .manual-prescriber {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid var(--line-soft);
 }
 
 .manual-prescriber h3 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-family: var(--font-thai);
   font-size: 14px;
   font-weight: 700;
+}
+
+.manual-prescriber .form-grid {
+  gap: 14px;
+}
+
+.manual-prescriber > .button-secondary {
+  margin-top: 14px;
 }
 
 .confirm-summary {
@@ -1843,8 +1847,8 @@ button:disabled {
   gap: 12px;
   max-width: 420px;
   padding: 12px 14px;
-  border: 2px solid var(--line);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line-control);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-thai);
   font-size: 12px;
   line-height: 1.4;
@@ -2255,7 +2259,7 @@ button:disabled {
     flex-direction: row;
     overflow-x: auto;
     border-right: 0;
-    border-bottom: 2px solid var(--line);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   .settings-nav__item {

@@ -47,10 +47,10 @@ from the SVG, the lockbox mark at large scale, and a yellow seal line.
 | `--blue-50` | `#EFF6FF` | Quiet blue surface |
 | `--yellow-400` | `#FACC15` | Signal yellow, primary action, seal band |
 | `--yellow-100` | `#FEF9C3` | Selected card tint, warning-adjacent highlight |
-| `--ink` | `#111111` | Text, borders, hard shadows |
+| `--ink` | `#111111` | Text, official paper outline, primary action |
 | `--paper` | `#FFFFFF` | The official form and card surfaces |
 | `--desk` | `#E8EDF7` | The working desk behind the paper |
-| `--desk-grid` | `rgba(29, 78, 216, 0.06)` | Drafting grid lines |
+| `--desk-grid` | `rgba(29, 78, 216, 0.035)` | Drafting grid lines |
 
 ### 3.2 Text
 
@@ -73,8 +73,9 @@ from the SVG, the lockbox mark at large scale, and a yellow seal line.
 | `--error` | `#DC2626` | Required field missing, failed action |
 | `--error-soft` | `#FEE2E2` | Error background |
 | `--focus` | `#FACC15` | Keyboard focus ring |
-| `--line` | `#111111` | Structural borders |
-| `--line-soft` | `#CBD5E1` | Quiet dividers |
+| `--line` | `#111111` | Strong outline: paper, primary action, dialogs |
+| `--line-soft` | `#CBD5E1` | 1 px chrome borders and quiet dividers |
+| `--line-control` | `#94A3B8` | Form-control borders |
 
 ### 3.4 Color rules
 
@@ -82,7 +83,9 @@ from the SVG, the lockbox mark at large scale, and a yellow seal line.
   attention. Do not use it for large backgrounds.
 - Blue is trust and information. Use it for the brand, links, selected info,
   and the connection state. Do not use blue for errors.
-- Black is structure. Borders, text, and hard shadows are black.
+- Black is reserved for the official paper, the primary action, and dialogs.
+  Screen chrome uses 1 px slate borders so the document stays the only strong
+  object on the desk.
 - Red is failure. Use it only for required-field errors and destructive
   actions.
 - Green is completion. Use it only for confirmed and connected states.
@@ -160,22 +163,46 @@ The SVG is square and geometric. The UI follows it.
 Do not use large rounded corners. The app is a document station, not a
 consumer app.
 
-### 5.2 Hard shadows
+### 5.2 Stroke hierarchy
 
-The SVG uses a solid offset shadow with no blur. The UI uses the same idea.
+Strokes carry hierarchy. Use the lightest stroke that still separates the
+element from its background.
+
+| Level | Stroke | Use |
+|---|---|---|
+| Strong | `2 px #111111` | Official A4 sheet, primary and accent buttons, login card, dialogs |
+| Control | `1 px #94A3B8` | Text inputs, selects, search field, small icon buttons |
+| Chrome | `1 px #CBD5E1` | Top bar and command bar separators, step cards, inspector cards, list rows, settings nav |
+
+Rules:
+
+- Never nest one strong outline inside another. A card inside a dialog uses a
+  chrome stroke, not a strong one.
+- Do not put a hard shadow on chrome cards. Use spacing, a 1 px rule, and the
+  surface tint instead.
+- Status colors (error, warning) may override the stroke color but not the
+  weight.
+- The printed form is separate and keeps its black form rules.
+
+### 5.3 Shadows
+
+The SVG uses a solid offset shadow with no blur. On screen, that hard shadow
+is reserved for objects that float above the desk.
 
 | Token | Value | Use |
 |---|---|---|
-| `shadow-sm` | `3px 3px 0 #111111` | Buttons, small cards |
-| `shadow-md` | `6px 6px 0 #111111` | Cards, search results |
-| `shadow-lg` | `10px 10px 0 #111111` | Dialogs, settings panel |
+| `shadow-sm` | `3px 3px 0 #111111` | Primary and accent buttons, tooltips, banners |
+| `shadow-md` | `6px 6px 0 #111111` | Search results, empty state |
+| `shadow-lg` | `10px 10px 0 #111111` | Dialogs, login card |
 | `shadow-paper` | `12px 12px 0 #111111` | The A4 sheet on the desk |
 
 Rules:
 
 - No soft blurred shadows for structural elements.
-- The shadow is part of the object, not a glow.
-- On press, the object moves 2 px toward the shadow and the shadow shrinks.
+- The shadow is part of the object, not a glow. Interface cards and inspector
+  panels have no shadow at all.
+- On press, the primary or accent button moves 2 px toward the shadow and the
+  shadow shrinks.
 - The printed form has no shadow.
 
 ## 6. Layout
@@ -343,9 +370,9 @@ The inspector is a convenience. The form preview is the source of truth.
 |---|---|---|---|---|---|
 | `button-primary` | `#111111` | `#FACC15` | 2 px `#111` | `shadow-sm` | Print, dominant action |
 | `button-accent` | `#FACC15` | `#111111` | 2 px `#111` | `shadow-sm` | Confirm, selected action |
-| `button-secondary` | `#FFFFFF` | `#111111` | 2 px `#111` | `shadow-sm` | Fetch, cancel, secondary |
-| `button-blue` | `#1D4ED8` | `#FFFFFF` | 2 px `#111` | `shadow-sm` | Search, info action |
-| `button-danger` | `#DC2626` | `#FFFFFF` | 2 px `#111` | `shadow-sm` | Clear, destructive |
+| `button-secondary` | `#FFFFFF` | `#111111` | 1 px `#94A3B8` | none | Fetch, cancel, secondary |
+| `button-blue` | `#1D4ED8` | `#FFFFFF` | 1 px `#1D4ED8` | none | Search, info action |
+| `button-danger` | `#DC2626` | `#FFFFFF` | 1 px `#DC2626` | none | Clear, destructive |
 | `button-ghost` | transparent | `#111111` | none | none | Quiet actions |
 
 All buttons:
@@ -354,19 +381,21 @@ All buttons:
 - height 40 px, compact 34 px
 - padding 0 16 px
 - font 14 px / 700
-- `:active` translates 2 px right and 2 px down, shadow becomes 1 px
+- `:active` translates primary and accent 2 px right and 2 px down, shadow
+  becomes 1 px; secondary and blue only change their background
 - `:disabled` background `#E5E7EB`, text `#6B7280`, border `#9CA3AF`, no shadow
 - focus ring 3 px `#FACC15` with 2 px offset
 
 ### 7.2 Inputs
 
 - Background white.
-- Border 2 px `#111111`.
+- Border 1 px `#94A3B8`.
 - Radius 2 px.
 - Height 40 px, compact 34 px.
 - Font 15 px.
-- Focus: 3 px yellow outline, 1 px black inner border.
-- Error: 2 px red border, red helper text.
+- Focus: 3 px yellow outline, 1 px control border.
+- Error: 2 px red border, red helper text (error states may use the stronger
+  weight because they are transient and must stand out).
 - Disabled: gray background, no shadow.
 - Labels are 13 px / 700, above the field.
 - Required labels use a small red dot or the word "จำเป็น".
@@ -375,10 +404,11 @@ All buttons:
 
 - The search lives inside step 1 of the command rail and is capped at the step
   width. It must not stretch across the window.
-- Input 40 px high, 2 px black border, radius 2 px, blue magnifier on the left.
-- Right search button, compact blue with white text.
+- Input 40 px high, 1 px `#94A3B8` border, radius 2 px, blue magnifier on the
+  left.
+- Right search button, compact blue with white text and a 1 px blue border.
 - Hint below the input: `HN 7 หลัก · CID 13 หลัก · ชื่อหรือนามสกุล`.
-- Results panel: anchored below the step card, white, 2 px black border,
+- Results panel: anchored below the step card, white, 1 px `#CBD5E1` border,
   `shadow-md`, max height 320 px.
 - Result row: HN chip in mono, name, masked CID, right chevron.
 - Hover or keyboard focus: `--yellow-100`.
@@ -386,7 +416,7 @@ All buttons:
 
 ### 7.4 Selected patient card
 
-- Blue-50 background, 2 px blue-700 border with a 6 px blue left accent.
+- Blue-50 background, 1 px blue-700 border with a 4 px blue left accent.
 - HN chip in mono and name in Thai on one line.
 - Masked CID in the card footer so all three step cards share a bottom rule.
 - A "เปลี่ยนผู้ป่วย" text action sits in the step header.
@@ -565,7 +595,8 @@ The final form uses the measured positions from
 ## 10. Motion
 
 - State transitions: 120 ms ease-out.
-- Button press: 80 ms, translate 2 px, shadow shrink.
+- Primary and accent button press: 80 ms, translate 2 px, shadow shrink.
+  Secondary and blue buttons only change background.
 - Dialog open: 120 ms fade and 4 px rise.
 - No bounce, elastic, or spring easing.
 - `prefers-reduced-motion: reduce` disables all transitions and animations.
@@ -604,7 +635,8 @@ A4 and never scaled.
 
 - Use the blue gradient only on the login brand panel.
 - Use yellow for the primary action and the selected state.
-- Use black borders and hard offset shadows.
+- Reserved black strokes and hard shadows for the paper, primary actions, and
+  dialogs; use 1 px slate strokes for the rest of the screen.
 - Keep the official form black on white.
 - Show the full CID only on the selected patient card and the form preview.
 - Put the prescriber name and licence in the form, but leave the signature
@@ -643,7 +675,7 @@ A4 and never scaled.
   --ink: #111111;
   --paper: #ffffff;
   --desk: #e8edf7;
-  --desk-grid: rgba(29, 78, 216, 0.06);
+  --desk-grid: rgba(29, 78, 216, 0.035);
   --text-primary: #111111;
   --text-secondary: #4b5563;
   --text-muted: #6b7280;
@@ -655,6 +687,7 @@ A4 and never scaled.
   --error-soft: #fee2e2;
   --line: #111111;
   --line-soft: #cbd5e1;
+  --line-control: #94a3b8;
   --focus: #facc15;
   --shadow-sm: 3px 3px 0 #111111;
   --shadow-md: 6px 6px 0 #111111;
