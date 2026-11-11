@@ -93,6 +93,15 @@ fn fit_and_center_main_window(app: &tauri::AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            // Fit and center while the window is still hidden, then show it at
+            // its final size so it never visibly jumps after launch.
+            fit_and_center_main_window(app.handle());
+            if let Some(window) = app.get_webview_window("main")
+                && let Err(error) = window.show()
+            {
+                error::dev_log(&format!("window show failed: {error}"));
+            }
+
             let config_dir = app.path().app_config_dir()?;
             let settings_path = config_dir.join(settings::SETTINGS_FILE_NAME);
             let loaded = tauri::async_runtime::block_on(settings::load(&settings_path));
@@ -109,7 +118,6 @@ pub fn run() {
                 commands::run_health_monitor(monitor_state).await;
             });
             app.manage(state);
-            fit_and_center_main_window(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

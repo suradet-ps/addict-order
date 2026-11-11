@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": { "script": "trunk serve --port 1420", "cwd": "../app" },
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": { "script": "trunk build", "cwd": "../app" },
+    "beforeBuildCommand": { "script": "trunk build --release", "cwd": "../app" },
     "frontendDist": "../app/dist"
   },
   "app": {
@@ -16,10 +16,12 @@
         "label": "main",
         "title": "Addict Order - ใบสั่งจ่าย ย.ส. ๒/ว.จ. ๒",
         "width": 1280,
-        "height": 800,
+        "height": 900,
         "minWidth": 960,
         "minHeight": 680,
         "resizable": true,
+        "visible": false,
+        "backgroundColor": "#E8EDF7",
         "center": true
       }
     ],
