@@ -29,6 +29,8 @@ Versioning once a release exists.
   `hospital_profile` address warning.
 - CI now checks the Tauri shell and documentation, uses read-only token
   permissions, and cancels superseded runs.
+- Added test-build and tagged publish-release workflows based on the sibling
+  projects.
 - The Tauri global API is disabled (`withGlobalTauri: false`); the frontend
   calls `__TAURI_INTERNALS__` directly.
 - Rewrote the README in the er-refill documentation style and updated the MIT
