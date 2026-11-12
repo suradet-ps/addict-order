@@ -7,8 +7,23 @@ Versioning once a release exists.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-12
+
+First working scaffold and first public release.
+
 ### Added
 
+- Tauri 2 + Leptos 0.8 workspace with `models`, `core`, `hosxp-connector`, and
+  `src-tauri` crates.
+- HOSxP `officer` login, encrypted connection settings, read-only pool, and
+  in-memory session.
+- Patient search by HN, CID, or name; visit selection; configured narcotic
+  order pull.
+- Pharmacist catalog settings with icode search, legal category, print unit,
+  default sig, and active flag.
+- Official A4 form preview, patient and prescriber edit dialogs, confirmation
+  snapshot, and print.
+- Unit tests for models, core, connector, and Tauri settings.
 - Project README, architecture, visual design, and contribution documents.
 - Official form specification for the Y.S. 2 / W.C. 2 prescription form.
 - HOSxP `officer` authentication design.
@@ -22,6 +37,9 @@ Versioning once a release exists.
 
 ### Changed
 
+- The connector uses a `utf8mb4` client charset so MySQL converts TIS-620
+  column data to UTF-8 for sqlx. The CLI verification still uses `tis620`.
+- The print stylesheet was tightened to keep a two-line sig on one A4 page.
 - Corrected the schema verification package after a live MariaDB 10.5.29 check
   against `hos`, โรงพยาบาลสระโบสถ์: `tis620` charset, `@@tx_read_only`,
   `thaiaddress` subdistrict join, `drug_control_type_id` blocker, actual
@@ -39,44 +57,13 @@ Versioning once a release exists.
   enabled as the vulnerability source; Dependabot security update PRs are
   disabled to avoid duplicate Renovate PRs.
 
-### Fixed
-
-- None yet.
-
 ### Security
 
+- Read-only guard, parameterized SQL, encrypted credentials, no PHI logging,
+  and no patient data on disk.
 - Documented the read-only HOSxP boundary, PHI rules, and the no-signature
   print rule.
 - Enabled GitHub secret scanning, push protection, Dependabot alerts, and
   private vulnerability reporting for the public repository.
 - Switched dependency and security pull requests to Renovate; Dependabot
   alerts remain the vulnerability source.
-
-## [0.1.0] - 2026-10-29
-
-First working scaffold.
-
-### Added
-
-- Tauri 2 + Leptos 0.8 workspace with `models`, `core`, `hosxp-connector`, and
-  `src-tauri` crates.
-- HOSxP `officer` login, encrypted connection settings, read-only pool, and
-  in-memory session.
-- Patient search by HN, CID, or name; visit selection; configured narcotic
-  order pull.
-- Pharmacist catalog settings with icode search, legal category, print unit,
-  default sig, and active flag.
-- Official A4 form preview, patient and prescriber edit dialogs, confirmation
-  snapshot, and print.
-- Unit tests for models, core, connector, and Tauri settings.
-
-### Changed
-
-- The connector uses a `utf8mb4` client charset so MySQL converts TIS-620
-  column data to UTF-8 for sqlx. The CLI verification still uses `tis620`.
-- The print stylesheet was tightened to keep a two-line sig on one A4 page.
-
-### Security
-
-- Read-only guard, parameterized SQL, encrypted credentials, no PHI logging,
-  and no patient data on disk.
