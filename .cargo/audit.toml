@@ -1,0 +1,27 @@
+# cargo-audit configuration (used by the Publish Release workflow).
+# Every ignore below is a transitive dependency we cannot remove or upgrade
+# yet. The app itself is a Tauri 2 desktop client that talks only to MySQL.
+
+[advisories]
+ignore = [
+  # Marvin Attack timing sidechannel on rsa: transitive dep of sqlx-mysql's
+  # caching_sha2_password RSA exchange. The target HOSxP is MariaDB 10.5 with
+  # mysql_native_password over the hospital LAN, so this path is not used.
+  # No patched release exists within sqlx's current rsa range.
+  "RUSTSEC-2023-0071",
+  # libsqlite3-sys is an optional sqlx backend. This app enables only the
+  # sqlx `mysql` feature, so the crate is locked but never compiled in.
+  "RUSTSEC-2026-0459",
+  # proc-macro-error is unmaintained (transitive dep of glib/gtk).
+  "RUSTSEC-2024-0370",
+  # zvariant, zvariant_derive, and zbus_names are unmaintained (transitive
+  # deps of keyring's zbus secret service backend on Linux). The app uses
+  # encryptman-keyring for the OS keychain; no safe upgrade until zbus 6.
+  "RUSTSEC-2026-0370",
+  "RUSTSEC-2026-0371",
+  "RUSTSEC-2026-0372",
+  # glib VariantStrIter unsoundness in the GTK 3 stack pulled by Tauri/wry on
+  # Linux. The patched glib >= 0.20 requires GTK 4; Tauri 2 still uses GTK 3.
+  # The app does not use VariantStrIter.
+  "RUSTSEC-2024-0429",
+]
